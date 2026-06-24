@@ -1,15 +1,119 @@
 package com.example.taskslayer.auth.login
 
+import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Label
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Unspecified
+import androidx.compose.ui.graphics.ColorProducer
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.taskslayer.R
+import com.example.taskslayer.ui.theme.TaskSlayerIcons
+import kotlin.coroutines.Continuation
 
-class LoginScreen {
 
-    @Composable
-    fun Login(
+@Composable
+fun LoginRoute(){
+    LoginContent()
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LoginContent(){
+
+    var email by remember { mutableStateOf("") }
+    var senha by remember { mutableStateOf("") }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ){
-        Text(text = "Login")
-    }
 
+        Column(
+            modifier = Modifier.fillMaxSize().padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(330.dp),
+                contentAlignment = Alignment.CenterStart
+            ){
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
+                ){
+                    Icon(
+                        modifier = Modifier.size(150.dp),
+                        painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
+                        tint = MaterialTheme.colorScheme.primary,
+                        contentDescription = "Samurai Crossed Katana"
+                    )
+                }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter
+                ){
+                    Icon(
+                        modifier = Modifier.size(200.dp),
+                        painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
+                        tint = MaterialTheme.colorScheme.primary ,
+                        contentDescription = "Samurai Login Helmet"
+                    )
+                }
+
+            }
+
+            Text(
+                text = "Login",
+                style = MaterialTheme.typography.headlineLarge
+            )
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text(stringResource(R.string.label_email)) }
+            )
+            OutlinedTextField(
+                value = senha,
+                onValueChange = { senha = it },
+                label = { Text(stringResource(R.string.label_senha)) }
+            )
+
+        }
+    }
+}
+
+
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun LoginContentPreview(){
+    LoginContent()
 }
