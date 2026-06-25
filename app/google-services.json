@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "472246063364",
+    "project_id": "task-slayer-2e26f",
+    "storage_bucket": "task-slayer-2e26f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472246063364:android:6c10aa814be453d0c3c051",
+        "android_client_info": {
+          "package_name": "com.example.taskslayer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT49nmHc3Nly0dc5mQaBcDr62qYIGF2Lc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
