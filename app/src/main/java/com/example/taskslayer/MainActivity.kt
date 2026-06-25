@@ -4,8 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.taskslayer.auth.login.LoginContent
-import com.example.taskslayer.auth.login.LoginRoute
+import com.example.taskslayer.ui.auth.login.LoginRoute
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 class MainActivity : ComponentActivity() {

@@ -1,6 +1,7 @@
-package com.example.taskslayer.auth.login
+package com.example.taskslayer.ui.auth.login
 
 import android.content.res.Configuration
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,16 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,10 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Unspecified
-import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -41,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.example.taskslayer.R
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
-import kotlin.coroutines.Continuation
+import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 
 @Composable
@@ -86,17 +83,28 @@ fun LoginContent(){
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(330.dp),
+                    .height(220.dp),
                 contentAlignment = Alignment.CenterStart
             ){
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.BottomCenter
                 ){
+                    // Sombra das katanas
                     Icon(
-                        modifier = Modifier.size(150.dp),
+                        modifier = Modifier
+                            .size(200.dp)
+                            .align(Alignment.BottomCenter)
+                            .offset(x = 4.dp, y = 4.dp),
                         painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color.Black.copy(alpha = 0.7f),
+                        contentDescription = null
+                    )
+                    // Katanas
+                    Icon(
+                        modifier = Modifier.size(200.dp),
+                        painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         contentDescription = "Samurai Crossed Katana"
                     )
                 }
@@ -104,14 +112,24 @@ fun LoginContent(){
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.TopCenter
                 ){
+                    // Sobra do capacete
+                    Icon(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .align(Alignment.TopCenter)
+                            .offset(x = 4.dp, y = 4.dp),
+                        painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
+                        tint = Color.Black.copy(alpha = 0.8f),
+                        contentDescription = null
+                    )
+                    // Capacete
                     Icon(
                         modifier = Modifier.size(200.dp),
                         painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
                         tint = MaterialTheme.colorScheme.primary ,
-                        contentDescription = "Samurai Login Helmet"
+                        contentDescription = "Samurai Login Helmet",
                     )
                 }
-
             }
 
             Text(
@@ -144,5 +162,7 @@ fun LoginContent(){
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun LoginContentPreview(){
-    LoginContent()
+    TaskSlayerTheme() {
+        LoginContent()
+    }
 }
