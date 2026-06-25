@@ -4,5 +4,7 @@ enum class Repetition {
     DIARIO,
     SEMANAL,
     MENSAL,
-    ANUAL
+    ANUAL,
+    NONE
 }
+
