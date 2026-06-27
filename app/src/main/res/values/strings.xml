@@ -45,4 +45,13 @@
     </string>
     <string name="label_email">E-mail</string>
     <string name="label_senha">Senha</string>
+    <string name="titulo_App">Task Slayer</string>
+    <string name="titulo_tela_cadastro">Cadastro</string>
+    <string name="label_nickname">Nickname</string>
+    <string name="label_confirmar_senha">Repetir Senha</string>
+    <string name="titulo_login">Entrar</string>
+    <string name="text_nao_tem_conta">"Não possui conta? "</string>
+    <string name="text_cadastre_se">Cadastre-se</string>
+    <string name="text_esqueceu_a_senha">"Esqueceu a senha? "</string>
+    <string name="text_redefina">Redefina</string>
 </resources>

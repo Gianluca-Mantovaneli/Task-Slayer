@@ -1,11 +1,11 @@
 package com.example.taskslayer.ui.auth.login
 
 import android.content.res.Configuration
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,12 +26,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,7 +70,8 @@ fun LoginContent(){
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "TaskSlayer",
+                text = stringResource(R.string.titulo_App),
+                textAlign = TextAlign.Center,
                 style = TextStyle(
                     fontSize = 70.sp,
                     color = MaterialTheme.colorScheme.primary,
@@ -133,8 +136,19 @@ fun LoginContent(){
             }
 
             Text(
-                text = "Login",
-                style = MaterialTheme.typography.headlineLarge
+                text = stringResource(R.string.titulo_login),
+                style = TextStyle(
+                    fontSize = 30.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    shadow = Shadow(
+                        color = Color.Black,
+                        blurRadius = 10f,
+                        offset = Offset(4.0f, 4.0f)
+                    )
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(20.dp)
             )
 
             OutlinedTextField(
@@ -153,6 +167,42 @@ fun LoginContent(){
                 onValueChange = { senha = it },
                 label = { Text(stringResource(R.string.label_senha)) }
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = stringResource(R.string.text_nao_tem_conta),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = stringResource(R.string.text_cadastre_se),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = stringResource(R.string.text_esqueceu_a_senha),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = stringResource(R.string.text_redefina),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
 
         }
     }
@@ -162,7 +212,7 @@ fun LoginContent(){
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun LoginContentPreview(){
-    TaskSlayerTheme() {
+    TaskSlayerTheme {
         LoginContent()
     }
 }
