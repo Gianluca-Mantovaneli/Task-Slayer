@@ -1,0 +1,253 @@
+package com.example.taskslayer.home
+
+import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
+import com.example.taskslayer.ui.theme.TaskSlayerIcons
+import com.example.taskslayer.ui.theme.TaskSlayerTheme
+
+@Composable
+fun HomeRoute(){
+    HomeContent()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeContent(){
+    val snackbarHostState = remember { SnackbarHostState() }
+    var expandido: Boolean by remember { mutableStateOf(false) }
+
+
+    Scaffold(
+        // 1. Gaveta do Topo
+        topBar = {
+            TopAppBar(
+                title = { Text("TaskSlayer", fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                actions = {
+                    Box{
+                        IconButton(onClick = { expandido = true }) {
+                            Icon(
+                                modifier = Modifier.size(30.dp),
+                                contentDescription = "Menu",
+                                painter = painterResource(id = TaskSlayerIcons.MenuCog),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expandido,
+                            onDismissRequest = { expandido = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Logout") },
+                                leadingIcon = {
+                                    Icon(
+                                        modifier = Modifier.size(15.dp),
+                                        painter = painterResource(id = TaskSlayerIcons.LogoutIcon),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "Logout"
+                                    )
+                                },
+                                onClick = {
+                                    expandido = false
+                                // TODO: Fazer a logica de Logout aqui
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Idioma") },
+                                leadingIcon = {
+                                    Icon(
+                                        modifier = Modifier.size(15.dp),
+                                        painter = painterResource(id = TaskSlayerIcons.ChangeLanguageIcon),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "Idioma"
+                                    )
+                                },
+                                onClick = {
+                                    expandido = false
+                                // TODO: Fazer a logica de linguagem aqui
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Tema") },
+                                leadingIcon = {
+                                    Icon(
+                                        modifier = Modifier.size(15.dp),
+                                        painter = painterResource(id = TaskSlayerIcons.ChangeThemeIcon),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        contentDescription = "Tema"
+                                    )
+                                },
+                                onClick = {
+                                    expandido = false
+                                // TODO: Fazer a logica de tema aqui
+                                }
+                            )
+                        }
+                    }
+
+                }
+            )
+        },
+        // 2. Gaveta do Botão Flutuante
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                /* TODO: Abrir criação de tarefa */
+                },
+                containerColor = MaterialTheme.colorScheme.secondary
+            ) {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    painter = painterResource(id = TaskSlayerIcons.AddIcon)
+                    , contentDescription = "Adicionar Tarefa",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        // 3. Gaveta da Barra de Navegação
+        bottomBar = {
+
+            NavigationBar {
+                // Itens para navegar entre Tarefas e Estatísticas
+                NavigationBarItem(
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    selected = false,
+                    onClick = {
+                        /*TODO: criar a lógica para navegar entre as telas*/
+                    },
+                    icon = {
+                        Icon(
+                            modifier = Modifier.size(40.dp),
+                            painter = painterResource(id = TaskSlayerIcons.statsMenuIcon),
+                            contentDescription = "Estatísticas",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    selected = false,
+                    onClick = {
+                    /*TODO: criar a lógica para navegar entre as telas*/
+                    },
+                    icon = {
+                        Icon(
+                            modifier = Modifier.size(40.dp),
+                            painter = painterResource(id = TaskSlayerIcons.todoMenuIcon),
+                            contentDescription = "Tarefas",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    selected = false,
+                    onClick = {
+                    /*TODO: criar a lógica para navegar entre as telas*/
+                    },
+                    icon = {
+                        Icon(
+                            modifier = Modifier.size(40.dp),
+                            painter = painterResource(id = TaskSlayerIcons.habitsMenuIcon),
+                            contentDescription = "Hábitos",
+                            tint = MaterialTheme.colorScheme.primary
+
+                        )
+                    }
+                )
+                NavigationBarItem(
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    selected = true,
+                    onClick = {
+                        /*TODO: criar a lógica para navegar entre as telas*/
+                    },
+                    icon = {
+                        Icon(
+                            modifier = Modifier.size(40.dp),
+                            painter = painterResource(id = TaskSlayerIcons.dailyMenuIcon),
+                            contentDescription = "Dailies",
+                            tint = MaterialTheme.colorScheme.primary
+
+                        )
+                    }
+                )
+            }
+        },
+        // 4. Gaveta de Avisos (Snackbar)
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        // O CONTEÚDO PRINCIPAL FICA AQUI:
+        // O Scaffold te dá o 'paddingValues' automaticamente para a sua lista de tarefas
+        // não sumir para baixo da bottomBar nem da topBar.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // IMPORTANTE: aplica os espaçamentos automáticos
+        ) {
+            // Aqui você vai chamar o bando de dados e listar os Hábitos, Dailies e Todos
+        }
+    }
+
+
+}
+
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeContentPreview(){
+    TaskSlayerTheme {
+        HomeContent()
+    }
+}
