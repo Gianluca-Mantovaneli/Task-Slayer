@@ -40,6 +40,8 @@ import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
+enum class AbasHome {STATS, TODO, DAILY, HABIT}
+
 @Composable
 fun HomeRoute(){
     HomeContent()
@@ -50,6 +52,7 @@ fun HomeRoute(){
 fun HomeContent(){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
+    var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
 
 
     Scaffold(
@@ -58,7 +61,7 @@ fun HomeContent(){
             TopAppBar(
                 title = { Text("TaskSlayer", fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
+                    containerColor = Color.Transparent
                 ),
                 actions = {
                     Box{
@@ -144,7 +147,9 @@ fun HomeContent(){
         // 3. Gaveta da Barra de Navegação
         bottomBar = {
 
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.Transparent
+            ) {
                 // Itens para navegar entre Tarefas e Estatísticas
                 NavigationBarItem(
                     colors = NavigationBarItemDefaults.colors(
@@ -152,16 +157,13 @@ fun HomeContent(){
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
-                    selected = false,
-                    onClick = {
-                        /*TODO: criar a lógica para navegar entre as telas*/
-                    },
+                    selected = abaAtual == AbasHome.STATS,
+                    onClick = { abaAtual = AbasHome.STATS },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
                             painter = painterResource(id = TaskSlayerIcons.statsMenuIcon),
-                            contentDescription = "Estatísticas",
-                            tint = MaterialTheme.colorScheme.primary
+                            contentDescription = "Estatísticas"
                         )
                     }
                 )
@@ -171,16 +173,13 @@ fun HomeContent(){
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
-                    selected = false,
-                    onClick = {
-                    /*TODO: criar a lógica para navegar entre as telas*/
-                    },
+                    selected = abaAtual == AbasHome.TODO,
+                    onClick = { abaAtual = AbasHome.TODO },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
                             painter = painterResource(id = TaskSlayerIcons.todoMenuIcon),
-                            contentDescription = "Tarefas",
-                            tint = MaterialTheme.colorScheme.primary
+                            contentDescription = "Tarefas"
                         )
                     }
                 )
@@ -190,17 +189,13 @@ fun HomeContent(){
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
-                    selected = false,
-                    onClick = {
-                    /*TODO: criar a lógica para navegar entre as telas*/
-                    },
+                    selected = abaAtual == AbasHome.HABIT,
+                    onClick = { abaAtual = AbasHome.HABIT },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
                             painter = painterResource(id = TaskSlayerIcons.habitsMenuIcon),
-                            contentDescription = "Hábitos",
-                            tint = MaterialTheme.colorScheme.primary
-
+                            contentDescription = "Hábitos"
                         )
                     }
                 )
@@ -210,17 +205,13 @@ fun HomeContent(){
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
-                    selected = true,
-                    onClick = {
-                        /*TODO: criar a lógica para navegar entre as telas*/
-                    },
+                    selected = abaAtual == AbasHome.DAILY,
+                    onClick = { abaAtual = AbasHome.DAILY },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
                             painter = painterResource(id = TaskSlayerIcons.dailyMenuIcon),
-                            contentDescription = "Dailies",
-                            tint = MaterialTheme.colorScheme.primary
-
+                            contentDescription = "Dailies"
                         )
                     }
                 )
@@ -232,12 +223,18 @@ fun HomeContent(){
         // O CONTEÚDO PRINCIPAL FICA AQUI:
         // O Scaffold te dá o 'paddingValues' automaticamente para a sua lista de tarefas
         // não sumir para baixo da bottomBar nem da topBar.
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues) // IMPORTANTE: aplica os espaçamentos automáticos
         ) {
-            // Aqui você vai chamar o bando de dados e listar os Hábitos, Dailies e Todos
+            when (abaAtual) {
+                // Roteamento das abas
+                AbasHome.STATS -> StatsRoute()
+                AbasHome.TODO -> TodoRoute()
+                AbasHome.DAILY -> DailieRoute()
+                AbasHome.HABIT -> HabitsRoute()
+            }
         }
     }
 
