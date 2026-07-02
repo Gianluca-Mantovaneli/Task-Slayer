@@ -35,7 +35,9 @@ fun DailieContent(
         contentAlignment = androidx.compose.ui.Alignment.Center
     ){
         LazyColumn() {
-            item {
+            items(
+                count = 2,
+            ) {
                 DailieCard(
                     "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                     listOf("Seg", "Qua", "Sex"),
