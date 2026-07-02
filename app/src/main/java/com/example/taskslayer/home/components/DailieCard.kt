@@ -39,7 +39,7 @@ import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 @Composable
 fun DailieCard(
-    titulo : String = "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    titulo : String = "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     frequencia : List<String> = listOf("SEG", "TER", "QUI"),
     dificuldade : Dificulty = Dificulty.TRIVIAL
 ){

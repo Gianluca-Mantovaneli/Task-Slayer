@@ -19,5 +19,7 @@ object TaskSlayerIcons {
     val easyDificultyIcon = R.drawable.easy_dificuty_icon
     val mediumDificultyIcon = R.drawable.medium_dificuty_icon
     val hardDificultyIcon = R.drawable.hard_dificuty_icon
+    val negativeHabitIcon = R.drawable.negative_habit_icon
+    val positiveHabitIcon = R.drawable.positive_habit_icon
 
 }
