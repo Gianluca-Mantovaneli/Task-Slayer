@@ -54,4 +54,8 @@
     <string name="text_cadastre_se">Cadastre-se</string>
     <string name="text_esqueceu_a_senha">"Esqueceu a senha? "</string>
     <string name="text_redefina">Redefina</string>
+    <string name="title_aba_home_todo">Tarefas</string>
+    <string name="title_aba_home_dailie">Diárias</string>
+    <string name="title_aba_home_habit">Hábitos</string>
+    <string name="title_aba_home_stats">Estatísticas</string>
 </resources>

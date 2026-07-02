@@ -1,14 +1,11 @@
 package com.example.taskslayer.home
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +22,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,13 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.taskslayer.R
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
-enum class AbasHome {STATS, TODO, DAILY, HABIT}
+enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
 fun HomeRoute(){
@@ -53,13 +51,22 @@ fun HomeContent(){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
     var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
+    var tituloTopBar by remember { mutableStateOf("TaskSlayer") }
+
+
 
 
     Scaffold(
         // 1. Gaveta do Topo
         topBar = {
+             tituloTopBar = when (abaAtual) {
+                AbasHome.TODO -> stringResource(R.string.title_aba_home_todo)
+                AbasHome.DAILY -> stringResource(R.string.title_aba_home_dailie)
+                AbasHome.HABITS -> stringResource(R.string.title_aba_home_habit)
+                AbasHome.STATS -> stringResource(R.string.title_aba_home_stats)
+            }
             TopAppBar(
-                title = { Text("TaskSlayer", fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary) },
+                title = { Text(text = tituloTopBar, fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -134,12 +141,20 @@ fun HomeContent(){
                 onClick = {
                 /* TODO: Abrir criação de tarefa */
                 },
-                containerColor = MaterialTheme.colorScheme.secondary
+                containerColor = MaterialTheme.colorScheme.tertiary
             ) {
                 Icon(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .offset(x = 2.dp, y = 2.dp),
+                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                    contentDescription = "Adicionar Tarefa",
+                    tint = Color.Black.copy(alpha = 0.7f)
+                )
+                Icon(
                     modifier = Modifier.size(30.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon)
-                    , contentDescription = "Adicionar Tarefa",
+                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                    contentDescription = "Adicionar Tarefa",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -189,8 +204,8 @@ fun HomeContent(){
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
-                    selected = abaAtual == AbasHome.HABIT,
-                    onClick = { abaAtual = AbasHome.HABIT },
+                    selected = abaAtual == AbasHome.HABITS,
+                    onClick = { abaAtual = AbasHome.HABITS },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -233,7 +248,7 @@ fun HomeContent(){
                 AbasHome.STATS -> StatsRoute()
                 AbasHome.TODO -> TodoRoute()
                 AbasHome.DAILY -> DailieRoute()
-                AbasHome.HABIT -> HabitsRoute()
+                AbasHome.HABITS -> HabitsRoute()
             }
         }
     }
