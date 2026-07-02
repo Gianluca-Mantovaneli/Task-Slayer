@@ -11,38 +11,46 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 
 @Composable
 fun DailieCard(
-    titulo : String = "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    frequencia : List<String> = listOf("SEG", "TER", "QUI"),
-    dificuldade : Dificulty = Dificulty.TRIVIAL
+    titulo : String ,
+    frequencia : List<String> ,
+    dificuldade : Dificulty,
+    soundManager: SoundEffectsManager?
 ){
+    var done by remember { mutableStateOf(false) }
+
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
         Dificulty.FACIL -> TaskSlayerIcons.easyDificultyIcon
@@ -70,12 +78,11 @@ fun DailieCard(
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.width(12.dp))
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f),
+                    .weight(1f)
+                    .padding(vertical = 10.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 // Linha do Título
@@ -100,32 +107,52 @@ fun DailieCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    frequencia.forEach { dia ->
-                        Text(
-                            text = dia,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                shadow = Shadow(
-                                    color = Color.Black.copy(alpha = 0.6f),
-                                    offset = Offset(
-                                        x = 3f,
-                                        y = 3f
-                                    ),
-                                    blurRadius = 4f
-                                )
-                            ),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        frequencia.forEach { dia ->
+                            Text(
+                                text = dia,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    shadow = Shadow(
+                                        color = Color.Black.copy(alpha = 0.6f),
+                                        offset = Offset(
+                                            x = 3f,
+                                            y = 3f
+                                        ),
+                                        blurRadius = 4f
+                                    )
+                                ),
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
                     }
+                    Checkbox(
+                        checked = done,
+                        onCheckedChange = { atual ->
+                            done = atual
+                            if (atual) {
+                                soundManager?.playSlashSound()
+                            }
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
+                            checkmarkColor = Color.Black
+                        )
+                    )
                 }
+
             }
             Box(){
                 Icon(
@@ -150,6 +177,11 @@ fun DailieCard(
 @Composable
 fun PreviewDailieCard(){
     TaskSlayerTheme() {
-        DailieCard()
+        DailieCard(
+            "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            listOf("Seg", "Qua", "Sex"),
+            Dificulty.TRIVIAL,
+            soundManager = null
+        )
     }
 }

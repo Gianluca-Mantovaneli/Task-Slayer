@@ -29,11 +29,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.R
+import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
@@ -53,6 +55,9 @@ fun HomeContent(){
     var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
     var tituloTopBar by remember { mutableStateOf("TaskSlayer") }
 
+    // criando o soundManager
+    val context = LocalContext.current
+    val soundManager = remember { SoundEffectsManager(context) }
 
 
 
@@ -250,6 +255,7 @@ fun HomeContent(){
                 AbasHome.DAILY -> DailieRoute()
                 AbasHome.HABITS -> HabitsRoute()
             }
+
         }
     }
 
