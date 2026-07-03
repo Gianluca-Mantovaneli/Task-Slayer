@@ -1,6 +1,7 @@
 package com.example.taskslayer.home.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,12 +62,13 @@ fun TodoCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(130.dp)
             .padding(10.dp),
         shape = AbsoluteCutCornerShape(topLeft = 20.dp, bottomRight = 20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
         ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         )
@@ -81,13 +83,13 @@ fun TodoCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .padding(vertical = 10.dp),
-                verticalArrangement = Arrangement.Center
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Linha do Título
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Text(
                         text = titulo,
@@ -106,11 +108,11 @@ fun TodoCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-
+                // Linha da Deadline / Checkbox
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
                         text = deadline,
@@ -128,23 +130,17 @@ fun TodoCard(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Checkbox(
+                    SlayerChecker(
                         checked = done,
                         onCheckedChange = { atual ->
                             done = atual
                             if (atual) {
                                 soundManager?.playSlashSound()
                             }
-                        },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = MaterialTheme.colorScheme.primary,
-                            uncheckedColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
-                            checkmarkColor = Color.Black
-                        )
+                        }
                     )
                 }
             }
-            Spacer(modifier = Modifier.width(15.dp))
             Box{
                 Icon(
                     painter = painterResource(id = iconeDificuldade),

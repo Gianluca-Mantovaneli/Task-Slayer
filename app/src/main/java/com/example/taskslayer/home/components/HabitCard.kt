@@ -1,6 +1,7 @@
 package com.example.taskslayer.home.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,12 +59,13 @@ fun HabitCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(130.dp)
             .padding(10.dp),
         shape = AbsoluteCutCornerShape(topLeft = 20.dp, bottomRight = 20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
         ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         )
@@ -90,9 +92,9 @@ fun HabitCard(
                 )
                 Icon(
                     painter = painterResource(id = iconeHabit),
-                    contentDescription = "Dificuldade da Missão",
+                    contentDescription = "Botão de marcar habito",
                     modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.tertiary
                 )
             }
             Text(
@@ -121,7 +123,7 @@ fun HabitCard(
                 )
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
-                    contentDescription = "Dificuldade da Missão",
+                    contentDescription = "Dificuldade da Tarefa",
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )

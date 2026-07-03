@@ -33,7 +33,7 @@ fun DailieContent(
     ){
         LazyColumn() {
             items(
-                count = 2,
+                count = 7,
             ) {
                 DailieCard(
                     "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

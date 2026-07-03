@@ -1,6 +1,7 @@
 package com.example.taskslayer.home
 
 import android.content.res.Configuration
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -24,21 +25,27 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.R
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
+import kotlin.math.roundToInt
 
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
@@ -59,7 +66,11 @@ fun HomeContent(){
     val context = LocalContext.current
     val soundManager = remember { SoundEffectsManager(context) }
 
-
+    // Floating Button Settings
+    var floatingButtonOffsetX by remember { mutableFloatStateOf(0f) }
+    var floatingButtonOffsetY by remember { mutableFloatStateOf(0f) }
+    var containerWidth by remember { mutableFloatStateOf(0f) }
+    var containerHeight by remember { mutableFloatStateOf(0f) }
 
     Scaffold(
         // 1. Gaveta do Topo
@@ -140,30 +151,7 @@ fun HomeContent(){
                 }
             )
         },
-        // 2. Gaveta do Botão Flutuante
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                /* TODO: Abrir criação de tarefa */
-                },
-                containerColor = MaterialTheme.colorScheme.tertiary
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .offset(x = 2.dp, y = 2.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = "Adicionar Tarefa",
-                    tint = Color.Black.copy(alpha = 0.7f)
-                )
-                Icon(
-                    modifier = Modifier.size(30.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = "Adicionar Tarefa",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
+        floatingActionButton = {},
         // 3. Gaveta da Barra de Navegação
         bottomBar = {
 
@@ -240,13 +228,15 @@ fun HomeContent(){
         // 4. Gaveta de Avisos (Snackbar)
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        // O CONTEÚDO PRINCIPAL FICA AQUI:
-        // O Scaffold te dá o 'paddingValues' automaticamente para a sua lista de tarefas
-        // não sumir para baixo da bottomBar nem da topBar.
+        // Conteúdo da tela
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // IMPORTANTE: aplica os espaçamentos automáticos
+                .padding(paddingValues)
+                .onSizeChanged { size ->
+                    containerWidth = size.width.toFloat()
+                    containerHeight = size.height.toFloat()
+                }
         ) {
             when (abaAtual) {
                 // Roteamento das abas
@@ -256,10 +246,50 @@ fun HomeContent(){
                 AbasHome.HABITS -> HabitsRoute(soundManager)
             }
 
+            FloatingActionButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .offset {
+                        IntOffset(floatingButtonOffsetX.roundToInt(), floatingButtonOffsetY.roundToInt())
+                    }
+                    .pointerInput(containerWidth, containerHeight) {
+                        if (containerWidth == 0f || containerHeight == 0f) return@pointerInput
+                        val fabSizePx = 56.dp.toPx()
+                        val marginPx = 16.dp.toPx()
+                        val minX = -(containerWidth - fabSizePx - (marginPx * 2))
+                        val maxX = 0f
+                        val minY = -(containerHeight - fabSizePx - (marginPx * 2))
+                        val maxY = 0f
+
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+
+                            // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
+                            floatingButtonOffsetX = (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
+                            floatingButtonOffsetY = (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
+                        }
+                    },
+                onClick = { /* TODO: Abrir criação de tarefa */ },
+                containerColor = MaterialTheme.colorScheme.tertiary
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .offset(x = 2.dp, y = 2.dp),
+                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                    contentDescription = null,
+                    tint = Color.Black.copy(alpha = 0.7f)
+                )
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                    contentDescription = "Adicionar Tarefa",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
-
-
 }
 
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)

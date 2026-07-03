@@ -1,6 +1,7 @@
 package com.example.taskslayer.home.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,6 +70,7 @@ fun DailieCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
         ),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         )
@@ -83,13 +85,13 @@ fun DailieCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .padding(vertical = 10.dp),
-                verticalArrangement = Arrangement.Center
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Linha do Título
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Text(
                         text = titulo,
@@ -110,9 +112,9 @@ fun DailieCard(
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -151,7 +153,6 @@ fun DailieCard(
                 }
 
             }
-            Spacer(modifier = Modifier.width(15.dp))
             Box(){
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
