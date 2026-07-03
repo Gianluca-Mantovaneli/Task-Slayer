@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,7 +63,7 @@ fun DailieCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(130.dp)
             .padding(10.dp),
         shape = AbsoluteCutCornerShape(topLeft = 20.dp, bottomRight = 20.dp),
         colors = CardDefaults.cardColors(
@@ -107,6 +108,7 @@ fun DailieCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+
                 Row(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -137,23 +139,19 @@ fun DailieCard(
                         }
 
                     }
-                    Checkbox(
+                    SlayerChecker(
                         checked = done,
                         onCheckedChange = { atual ->
                             done = atual
                             if (atual) {
                                 soundManager?.playSlashSound()
                             }
-                        },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = MaterialTheme.colorScheme.primary,
-                            uncheckedColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
-                            checkmarkColor = Color.Black
-                        )
+                        }
                     )
                 }
 
             }
+            Spacer(modifier = Modifier.width(15.dp))
             Box(){
                 Icon(
                     painter = painterResource(id = iconeDificuldade),

@@ -250,10 +250,10 @@ fun HomeContent(){
         ) {
             when (abaAtual) {
                 // Roteamento das abas
-                AbasHome.STATS -> StatsRoute()
-                AbasHome.TODO -> TodoRoute()
-                AbasHome.DAILY -> DailieRoute()
-                AbasHome.HABITS -> HabitsRoute()
+                AbasHome.STATS -> StatsRoute(soundManager)
+                AbasHome.TODO -> TodoRoute(soundManager)
+                AbasHome.DAILY -> DailieRoute(soundManager)
+                AbasHome.HABITS -> HabitsRoute(soundManager)
             }
 
         }

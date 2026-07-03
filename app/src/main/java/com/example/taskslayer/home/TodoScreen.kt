@@ -16,9 +16,9 @@ import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 @Composable
-fun TodoRoute(){
+fun TodoRoute(soundManager: SoundEffectsManager?){
     TodoContent(
-        soundManager = null
+        soundManager = soundManager
     )
 }
 
@@ -38,7 +38,7 @@ fun TodoContent(
                     "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                     "10/10/2023",
                     Dificulty.TRIVIAL,
-                    soundManager
+                    soundManager = soundManager
                 )
             }
         }

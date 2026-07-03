@@ -1,6 +1,7 @@
 package com.example.taskslayer.home.components
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,14 +32,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 @Composable
 fun HabitCard(
-    titulo : String = "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    habitEffect: Boolean = true,
-    dificuldade : Dificulty = Dificulty.DIFICIL
+    titulo : String,
+    habitEffect: Boolean,
+    dificuldade : Dificulty,
+    sounManager: SoundEffectsManager?
 ){
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
@@ -67,15 +71,21 @@ fun HabitCard(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .weight(.2f)
-                .padding(horizontal = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(){
+            Box(
+                modifier = Modifier.clickable{
+                    sounManager?.playSlashSound()
+                }
+            ){
                 Icon(
                     painter = painterResource(id = iconeHabit),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).offset(x= 2.dp, y = 2.dp),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .offset(x= 2.dp, y = 2.dp),
                     tint = Color.Black.copy(alpha = 0.7f)
                 )
                 Icon(
@@ -85,36 +95,24 @@ fun HabitCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(0.6f),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 5.dp),
-                        text = titulo,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            shadow = Shadow(
-                                color = Color.Black.copy(alpha = 0.6f),
-                                offset = Offset(
-                                    x = 3f,
-                                    y = 3f
-                                ),
-                                blurRadius = 4f
-                            )
+            Text(
+                modifier = Modifier.padding(horizontal = 10.dp).weight(1f),
+                text = titulo,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.6f),
+                        offset = Offset(
+                            x = 3f,
+                            y = 3f
                         ),
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        blurRadius = 4f
                     )
-                }
-            }
-            Box(){
+                ),
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Box{
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
                     contentDescription = null,
@@ -136,6 +134,11 @@ fun HabitCard(
 @Composable
 fun PreviewHabitCard(){
     TaskSlayerTheme() {
-        HabitCard()
+        HabitCard(
+            "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            true,
+            Dificulty.TRIVIAL,
+            sounManager = null
+        )
     }
 }
