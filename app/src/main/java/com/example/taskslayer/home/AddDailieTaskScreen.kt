@@ -11,15 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +44,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import java.time.Instant
@@ -63,23 +68,31 @@ fun AddDailieTaskRoute(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDailieTaskContent(
+    isEditMode: Boolean = false,
     onBackClick: () -> Unit,
-    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String, repeticao: Int, frequencia: List<String>, lembretes: List<String>) -> Unit
-
+    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String, repeticao: Repetition, frequencia: Int, lembretes: List<String>) -> Unit = {_,_,_,_,_,_,_ ->},
+    onDeleteTask: () -> Unit = {}
 ){
     var titulo by rememberSaveable { mutableStateOf("") }
     var descricao by rememberSaveable { mutableStateOf("") }
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
-    var deadline by rememberSaveable { mutableStateOf("") }
-    var repeticao by rememberSaveable { mutableIntStateOf(1) }
-    var frequencia by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var dataInicio by rememberSaveable { mutableStateOf("") }
+    var repeticao by rememberSaveable { mutableStateOf(Repetition.NONE) }
+    var frequencia by rememberSaveable { mutableIntStateOf(1) }
     var lembretes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
-    // Para validar se o formulário está completo u sufuciente para o usuario salvar a tarefa
-    val isFormValid = titulo.isNotBlank() && dificuldadeSelecionada != Dificulty.NONE
+    var menuExpandido by remember { mutableStateOf(false) }
+
+    // Para validar se o formulário está completo o sufuciente para o usuario salvar a tarefa
+    val isFormValid =
+        titulo.isNotBlank() &&
+        dificuldadeSelecionada != Dificulty.NONE &&
+        dataInicio.isNotBlank() &&
+        repeticao != Repetition.NONE &&
+        frequencia > 0
 
     Scaffold(
         topBar = {
@@ -98,12 +111,21 @@ fun AddDailieTaskContent(
                     }
                 },
                 actions = {
+                    if(isEditMode){
+                        IconButton(onClick = onDeleteTask) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Deletar",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     IconButton(onClick = {
                         onSaveTask(
                             titulo,
                             descricao,
                             dificuldadeSelecionada,
-                            deadline,
+                            dataInicio,
                             repeticao,
                             frequencia,
                             lembretes
@@ -207,17 +229,23 @@ fun AddDailieTaskContent(
                     )
                 }
             }
-            // deadline
+            // data inicio
+            Text(
+                text = "Data Inicial (Start)",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 10.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp)
             ) {
                 OutlinedTextField(
-                    value = deadline,
+                    value = dataInicio,
                     onValueChange = {},
-                    label = { Text("Prazo Final (Deadline)") },
-                    placeholder = { Text("Selecione uma data...") },
+                    label = { Text("Selecione Uma Data...") },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false,
@@ -231,6 +259,71 @@ fun AddDailieTaskContent(
                     modifier = Modifier
                         .matchParentSize()
                         .clickable { showDatePicker = true }
+                )
+            }
+            // Frequencia
+            Text(
+                text = "Frequência",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 10.dp),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = menuExpandido,
+                    onExpandedChange = { menuExpandido = !menuExpandido },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp)
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly = true,
+                        value = repeticao.name,
+                        onValueChange = {},
+                        label = { Text("Repetição") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpandido) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = menuExpandido,
+                        onDismissRequest = { menuExpandido = false }
+                    ) {
+                        Repetition.entries.filter { it != Repetition.NONE }.forEach { opcao ->
+                            DropdownMenuItem(
+                                text = { Text(text = opcao.name, style = MaterialTheme.typography.bodyLarge) },
+                                onClick = {
+                                    repeticao = opcao
+                                    menuExpandido = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp),
+                    value = if (frequencia == 0) "" else frequencia.toString(),
+                    onValueChange = { novoTexto ->
+                        if (novoTexto.all { it.isDigit() }) {
+                            frequencia = novoTexto.toIntOrNull() ?: 0
+                        }
+                    },
+                    label = { Text("A cada") },
+                    placeholder = { Text("Ex: 1, 2, 3, etc...") },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    )
                 )
             }
         }
@@ -248,7 +341,7 @@ fun AddDailieTaskContent(
                             .toLocalDate()
 
                         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                        deadline = date.format(formatter)
+                        dataInicio = date.format(formatter)
                     }
                     showDatePicker = false
                 }) {
