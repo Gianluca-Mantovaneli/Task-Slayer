@@ -21,6 +21,6 @@ fun AddTodoTaskContent(){
 @Composable
 fun AddTodoTaskContentPreview(){
     TaskSlayerTheme {
-        AddDailieTaskContent()
+        AddTodoTaskContent()
     }
 }

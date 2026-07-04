@@ -151,7 +151,6 @@ fun HomeContent(){
                 }
             )
         },
-        floatingActionButton = {},
         // 3. Gaveta da Barra de Navegação
         bottomBar = {
 
