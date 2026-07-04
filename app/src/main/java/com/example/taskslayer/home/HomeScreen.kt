@@ -46,17 +46,28 @@ import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import kotlin.math.roundToInt
+import com.example.taskslayer.ui.theme.AppThemeMode
 
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
 fun HomeRoute(){
-    HomeContent()
+    var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
+
+    TaskSlayerTheme(themeMode = currentTheme) {
+        HomeContent(
+            currentTheme = currentTheme,
+            onThemeChange = { novoTema -> currentTheme = novoTema }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeContent(){
+fun HomeContent(
+    currentTheme: AppThemeMode,
+    onThemeChange: (AppThemeMode) -> Unit
+){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
     var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
@@ -142,7 +153,15 @@ fun HomeContent(){
                                 },
                                 onClick = {
                                     expandido = false
-                                // TODO: Fazer a logica de tema aqui
+
+                                    // Calcula o próximo tema
+                                    val proximoTema = when (currentTheme) {
+                                        AppThemeMode.LIGHT -> AppThemeMode.DARK
+                                        else -> AppThemeMode.LIGHT
+                                    }
+
+                                    // Dispara o evento para atualizar a tela inteira
+                                    onThemeChange(proximoTema)
                                 }
                             )
                         }
@@ -295,6 +314,9 @@ fun HomeContent(){
 @Composable
 fun HomeContentPreview(){
     TaskSlayerTheme {
-        HomeContent()
+        HomeContent(
+            currentTheme = AppThemeMode.DARK,
+            onThemeChange = {}
+        )
     }
 }

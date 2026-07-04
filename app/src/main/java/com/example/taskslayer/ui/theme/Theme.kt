@@ -15,6 +15,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+enum class AppThemeMode {
+    SYSTEM, // Segue o sistema do celular (Padrão)
+    LIGHT,  // Força modo claro
+    DARK    // Força modo escuro
+}
 private val DarkColorScheme = darkColorScheme(
     primary = LaranjaSamurai,
     secondary = CinzaAco,
@@ -31,10 +36,18 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun TaskSlayerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val isSystemDark = isSystemInDarkTheme()
+
+    val darkTheme = when (themeMode) {
+        AppThemeMode.SYSTEM -> isSystemDark
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -48,7 +61,7 @@ fun TaskSlayerTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
