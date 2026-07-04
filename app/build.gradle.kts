@@ -58,7 +58,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    //implementation(libs.firebase.firestore.ktx)
     implementation(libs.material)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     testImplementation(libs.junit)
@@ -73,6 +72,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.analytics)
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-firestore")
 
     // Networking
     implementation(libs.retrofit)

@@ -1,71 +1,89 @@
 package com.example.taskslayer.ui.auth.login
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskslayer.R
+import com.example.taskslayer.ui.auth.AuthUiState
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
-
 @Composable
-fun LoginRoute(){
-    LoginContent()
+fun LoginRoute(
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    viewModel: LoginViewModel = viewModel()
+){
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState) {
+        when(uiState) {
+            is AuthUiState.Success -> {
+                onLoginSuccess()
+                viewModel.resetState()
+            }
+            is AuthUiState.Error -> {
+                Toast.makeText(context, (uiState as AuthUiState.Error).theMessage, Toast.LENGTH_LONG).show()
+                viewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
+    LoginContent(
+        uiState = uiState,
+        onLoginClick = { email, senha -> viewModel.logarUsuario(email, senha) },
+        onRegisterClick = onNavigateToRegister,
+        onForgotPasswordClick = { emailInformado, onResultado ->
+            viewModel.enviarEmailRecuperacao(emailInformado) { sucesso, mensagem ->
+                onResultado(sucesso, mensagem)
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginContent(){
-
+fun LoginContent(
+    uiState: AuthUiState = AuthUiState.Idle,
+    onLoginClick: (String, String) -> Unit = { _, _ -> },
+    onRegisterClick: () -> Unit = {},
+    onForgotPasswordClick: (String, (Boolean, String) -> Unit) -> Unit = { _, _ -> }
+){
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ){
+    var mostrarDialogoRecuperacao by remember { mutableStateOf(false) }
+    var emailRecuperacao by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)){
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-                .verticalScroll(rememberScrollState()), // Serve para fazer o scroll na tela se o teclado estiver aberto
+            modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -73,138 +91,151 @@ fun LoginContent(){
                 text = stringResource(R.string.titulo_App),
                 textAlign = TextAlign.Center,
                 style = TextStyle(
-                    fontSize = 70.sp,
+                    fontSize = 60.sp,
                     color = MaterialTheme.colorScheme.primary,
                     fontFamily = FonteDoTituloSlayer,
-                    shadow = Shadow(
-                        color = Color.Black,
-                        blurRadius = 10f,
-                        offset = Offset(4.0f, 4.0f)
-                    )
+                    shadow = Shadow(color = Color.Black, blurRadius = 10f, offset = Offset(4.0f, 4.0f))
                 )
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                contentAlignment = Alignment.CenterStart
-            ){
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ){
-                    // Sombra das katanas
-                    Icon(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .align(Alignment.BottomCenter)
-                            .offset(x = 4.dp, y = 4.dp),
-                        painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
-                        tint = Color.Black.copy(alpha = 0.7f),
-                        contentDescription = null
-                    )
-                    // Katanas
-                    Icon(
-                        modifier = Modifier.size(200.dp),
-                        painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        contentDescription = "Samurai Crossed Katana"
-                    )
-                }
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.TopCenter
-                ){
-                    // Sobra do capacete
-                    Icon(
-                        modifier = Modifier
-                            .size(200.dp)
-                            .align(Alignment.TopCenter)
-                            .offset(x = 4.dp, y = 4.dp),
-                        painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
-                        tint = Color.Black.copy(alpha = 0.8f),
-                        contentDescription = null
-                    )
-                    // Capacete
-                    Icon(
-                        modifier = Modifier.size(200.dp),
-                        painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
-                        tint = MaterialTheme.colorScheme.primary ,
-                        contentDescription = "Samurai Login Helmet",
-                    )
-                }
+
+            // Seção de Ícones das Katanas e Capacete
+            Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center){
+                Icon(
+                    modifier = Modifier.size(160.dp).offset(x = 4.dp, y = 4.dp),
+                    painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
+                    tint = Color.Black.copy(alpha = 0.5f), contentDescription = null
+                )
+                Icon(
+                    modifier = Modifier.size(160.dp),
+                    painter = painterResource(id = TaskSlayerIcons.SamuraiCrossedKatana),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), contentDescription = null
+                )
+                Icon(
+                    modifier = Modifier.size(160.dp).offset(x = 4.dp, y = 4.dp),
+                    painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
+                    tint = Color.Black.copy(alpha = 0.6f), contentDescription = null
+                )
+                Icon(
+                    modifier = Modifier.size(160.dp),
+                    painter = painterResource(id = TaskSlayerIcons.SamuraiLoginHelmet),
+                    tint = MaterialTheme.colorScheme.primary, contentDescription = null
+                )
             }
 
             Text(
                 text = stringResource(R.string.titulo_login),
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    shadow = Shadow(
-                        color = Color.Black,
-                        blurRadius = 10f,
-                        offset = Offset(4.0f, 4.0f)
-                    )
-                ),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(20.dp)
+                style = TextStyle(fontSize = 28.sp, color = MaterialTheme.colorScheme.primary)
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth(),
                 value = email,
                 onValueChange = { email = it },
                 label = { Text(stringResource(R.string.label_email)) }
             )
             OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 value = senha,
                 onValueChange = { senha = it },
-                label = { Text(stringResource(R.string.label_senha)) }
+                label = { Text(stringResource(R.string.label_senha)) },
+                visualTransformation = PasswordVisualTransformation() // Esconde a senha com bolinhas
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
-                horizontalArrangement = Arrangement.Start
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { onLoginClick(email, senha) },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                enabled = uiState !is AuthUiState.Loading
             ) {
-                Text(
-                    text = stringResource(R.string.text_nao_tem_conta),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                if (uiState is AuthUiState.Loading) {
+                    CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("ENTRAR NA BATALHA", fontFamily = FonteDoTituloSlayer, fontSize = 18.sp, color = Color.Black)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Não tem conta? Cadastre-se
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(text = stringResource(R.string.text_nao_tem_conta) + " ", color = MaterialTheme.colorScheme.secondary)
                 Text(
                     text = stringResource(R.string.text_cadastre_se),
-                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.text_esqueceu_a_senha),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.text_redefina),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.clickable { onRegisterClick() } // Navega ao clicar
                 )
             }
 
+            // Esqueceu a senha? Redefina
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(text = stringResource(R.string.text_esqueceu_a_senha) + " ", color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    text = stringResource(R.string.text_redefina),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        // Copia o e-mail principal se o usuário já tiver digitado metade dele
+                        emailRecuperacao = email
+                        mostrarDialogoRecuperacao = true
+                    }
+                )
+            }
         }
+    }
+
+    if (mostrarDialogoRecuperacao) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoRecuperacao = false },
+            title = {
+                Text(
+                    text = "Recuperar Senha",
+                    fontFamily = FonteDoTituloSlayer,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Informe o e-mail da sua conta para enviarmos as instruções de redefinição.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    OutlinedTextField(
+                        value = emailRecuperacao,
+                        onValueChange = { emailRecuperacao = it },
+                        label = { Text("E-mail cadastrado") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onForgotPasswordClick(emailRecuperacao) { sucesso, mensagem ->
+                            Toast.makeText(context, mensagem, Toast.LENGTH_LONG).show()
+                            if (sucesso) {
+                                mostrarDialogoRecuperacao = false
+                            }
+                        }
+                    }
+                ) {
+                    Text("ENVIAR", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoRecuperacao = false }) {
+                    Text("CANCELAR", color = MaterialTheme.colorScheme.secondary)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 
@@ -212,7 +243,5 @@ fun LoginContent(){
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun LoginContentPreview(){
-    TaskSlayerTheme {
-        LoginContent()
-    }
+    TaskSlayerTheme { LoginContent() }
 }

@@ -51,13 +51,16 @@ import com.example.taskslayer.ui.theme.AppThemeMode
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
-fun HomeRoute(){
+fun HomeRoute(
+    onSignOutClick: () -> Unit
+){
     var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
 
     TaskSlayerTheme(themeMode = currentTheme) {
         HomeContent(
             currentTheme = currentTheme,
-            onThemeChange = { novoTema -> currentTheme = novoTema }
+            onThemeChange = { novoTema -> currentTheme = novoTema },
+            onSignOutClick = onSignOutClick
         )
     }
 }
@@ -66,7 +69,8 @@ fun HomeRoute(){
 @Composable
 fun HomeContent(
     currentTheme: AppThemeMode,
-    onThemeChange: (AppThemeMode) -> Unit
+    onThemeChange: (AppThemeMode) -> Unit,
+    onSignOutClick: () -> Unit
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
@@ -123,7 +127,8 @@ fun HomeContent(
                                 },
                                 onClick = {
                                     expandido = false
-                                // TODO: Fazer a logica de Logout aqui
+                                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                    onSignOutClick()
                                 }
                             )
                             DropdownMenuItem(
@@ -316,7 +321,8 @@ fun HomeContentPreview(){
     TaskSlayerTheme {
         HomeContent(
             currentTheme = AppThemeMode.DARK,
-            onThemeChange = {}
+            onThemeChange = {},
+            onSignOutClick = {}
         )
     }
 }

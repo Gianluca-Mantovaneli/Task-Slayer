@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.taskslayer.domain.model.User
-//import com.google.firebase.firestore.FirebaseFirestore
+//import com.google.firebase.storage.FirebaseFirestore
+//import com.google.firebase.storage.FirebaseStorage
+//import android.net.Uri
 
 class StatsViewModel : ViewModel() {
     // O StateFlow segura o estado dos dados e avisa o Compose quando algo muda
