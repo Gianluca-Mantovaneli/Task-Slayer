@@ -21,14 +21,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d96a6c69-7f19-4507-ba77-96ce2c80bd03" name="Changes" comment="fix: tirando arquivos desnescessarios do git">
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddDailieTaskScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddDailieTaskScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddHabitTakScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddHabitTakScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddTodoTaskScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/home/AddTodoTaskScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/ui/theme/TaskSlayerIcons.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/taskslayer/ui/theme/TaskSlayerIcons.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/easy_dificuty_icon.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/easy_dificuty_icon.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/trivial_dificuty_icon.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/trivial_dificuty_icon.xml" afterDir="false" />
-    </list>
+    <list default="true" id="d96a6c69-7f19-4507-ba77-96ce2c80bd03" name="Changes" comment="fix: tirando arquivos desnescessarios do git&#10;feat: telas de adicionar task visual pronto" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -769,7 +762,23 @@
       <option name="project" value="LOCAL" />
       <updated>1783185209852</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="fix: tirando arquivos desnescessarios do git">
+      <option name="closed" value="true" />
+      <created>1783196517408</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1783196517408</updated>
+    </task>
+    <task id="LOCAL-00027" summary="fix: tirando arquivos desnescessarios do git&#10;feat: telas de adicionar task visual pronto">
+      <option name="closed" value="true" />
+      <created>1783196636973</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1783196636973</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -806,19 +815,20 @@
     <MESSAGE value="feat: Iniciando as telas de adicionar tasks&#10;Fix: Botao flutuante não passa mais por cima dos menus, e continua arrastavel" />
     <MESSAGE value="feat: Tela de adicionar dailie iniciada" />
     <MESSAGE value="fix: tirando arquivos desnescessarios do git" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: tirando arquivos desnescessarios do git" />
+    <MESSAGE value="fix: tirando arquivos desnescessarios do git&#10;feat: telas de adicionar task visual pronto" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: tirando arquivos desnescessarios do git&#10;feat: telas de adicionar task visual pronto" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
       <map>
         <entry key="com.example.taskslayer">
           <value>
-            <CheckInfo lastCheckTimestamp="1783014506957" />
+            <CheckInfo lastCheckTimestamp="1783196526003" />
           </value>
         </entry>
         <entry key="com.example.taskslayer.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1783014506953" />
+            <CheckInfo lastCheckTimestamp="1783196525996" />
           </value>
         </entry>
       </map>
