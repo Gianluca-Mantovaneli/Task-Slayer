@@ -269,47 +269,54 @@ fun HomeContent(
                 AbasHome.HABITS -> HabitsRoute(soundManager)
             }
 
-            FloatingActionButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .offset {
-                        IntOffset(floatingButtonOffsetX.roundToInt(), floatingButtonOffsetY.roundToInt())
-                    }
-                    .pointerInput(containerWidth, containerHeight) {
-                        if (containerWidth == 0f || containerHeight == 0f) return@pointerInput
-                        val fabSizePx = 56.dp.toPx()
-                        val marginPx = 16.dp.toPx()
-                        val minX = -(containerWidth - fabSizePx - (marginPx * 2))
-                        val maxX = 0f
-                        val minY = -(containerHeight - fabSizePx - (marginPx * 2))
-                        val maxY = 0f
-
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
-
-                            // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
-                            floatingButtonOffsetX = (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
-                            floatingButtonOffsetY = (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
-                        }
-                    },
-                onClick = { /* TODO: Abrir criação de tarefa */ },
-                containerColor = MaterialTheme.colorScheme.tertiary
-            ) {
-                Icon(
+            if(abaAtual != AbasHome.STATS) {
+                FloatingActionButton(
                     modifier = Modifier
-                        .size(30.dp)
-                        .offset(x = 2.dp, y = 2.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = null,
-                    tint = Color.Black.copy(alpha = 0.7f)
-                )
-                Icon(
-                    modifier = Modifier.size(30.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = "Adicionar Tarefa",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .offset {
+                            IntOffset(
+                                floatingButtonOffsetX.roundToInt(),
+                                floatingButtonOffsetY.roundToInt()
+                            )
+                        }
+                        .pointerInput(containerWidth, containerHeight) {
+                            if (containerWidth == 0f || containerHeight == 0f) return@pointerInput
+                            val fabSizePx = 56.dp.toPx()
+                            val marginPx = 16.dp.toPx()
+                            val minX = -(containerWidth - fabSizePx - (marginPx * 2))
+                            val maxX = 0f
+                            val minY = -(containerHeight - fabSizePx - (marginPx * 2))
+                            val maxY = 0f
+
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+
+                                // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
+                                floatingButtonOffsetX =
+                                    (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
+                                floatingButtonOffsetY =
+                                    (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
+                            }
+                        },
+                    onClick = { /* TODO: Abrir criação de tarefa */ },
+                    containerColor = MaterialTheme.colorScheme.tertiary
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .offset(x = 2.dp, y = 2.dp),
+                        painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                        contentDescription = null,
+                        tint = Color.Black.copy(alpha = 0.7f)
+                    )
+                    Icon(
+                        modifier = Modifier.size(30.dp),
+                        painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                        contentDescription = "Adicionar Tarefa",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
