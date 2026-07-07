@@ -52,6 +52,8 @@ enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
 fun HomeRoute(
+    abaAtual: AbasHome,
+    onAbaChange: (AbasHome) -> Unit,
     onSignOutClick: () -> Unit,
     onAddTodoClick: () -> Unit,
     onAddDailieClick: () -> Unit,
@@ -61,6 +63,8 @@ fun HomeRoute(
 
     TaskSlayerTheme(themeMode = currentTheme) {
         HomeContent(
+            abaAtual = abaAtual,
+            onAbaChange = onAbaChange,
             currentTheme = currentTheme,
             onThemeChange = { novoTema -> currentTheme = novoTema },
             onSignOutClick = onSignOutClick,
@@ -74,6 +78,8 @@ fun HomeRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    abaAtual: AbasHome,
+    onAbaChange: (AbasHome) -> Unit,
     currentTheme: AppThemeMode,
     onThemeChange: (AppThemeMode) -> Unit,
     onSignOutClick: () -> Unit,
@@ -83,7 +89,6 @@ fun HomeContent(
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
-    var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
     var tituloTopBar by remember { mutableStateOf("TaskSlayer") }
 
     // criando o soundManager
@@ -198,7 +203,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.STATS,
-                    onClick = { abaAtual = AbasHome.STATS },
+                    onClick = { onAbaChange(AbasHome.STATS) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -214,7 +219,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.TODO,
-                    onClick = { abaAtual = AbasHome.TODO },
+                    onClick = { onAbaChange(AbasHome.TODO) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -230,7 +235,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.HABITS,
-                    onClick = { abaAtual = AbasHome.HABITS },
+                    onClick = { onAbaChange(AbasHome.HABITS) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -246,7 +251,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.DAILY,
-                    onClick = { abaAtual = AbasHome.DAILY },
+                    onClick = { onAbaChange(AbasHome.DAILY) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -343,6 +348,8 @@ fun HomeContent(
 fun HomeContentPreview(){
     TaskSlayerTheme {
         HomeContent(
+            abaAtual = AbasHome.STATS,
+            onAbaChange = {},
             currentTheme = AppThemeMode.DARK,
             onThemeChange = {},
             onSignOutClick = {}

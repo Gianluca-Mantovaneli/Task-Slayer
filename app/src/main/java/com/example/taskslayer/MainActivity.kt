@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.taskslayer.home.AbasHome
 import com.example.taskslayer.home.AddDailieTaskRoute
 import com.example.taskslayer.home.AddHabitTaskRoute
 import com.example.taskslayer.home.HomeRoute
@@ -31,6 +32,8 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(telaInicial)
                 }
 
+                var abaHomeAtual by remember { mutableStateOf(AbasHome.STATS) }
+
                 // Sistema de roteamento baseado em string
                 when (telaAtual) {
                     "login" -> LoginRoute(
@@ -48,6 +51,10 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                     "home" -> HomeRoute(
+                        abaAtual = abaHomeAtual,
+                        onAbaChange = { novaAba ->
+                            abaHomeAtual = novaAba
+                        },
                         onSignOutClick = {
                             telaAtual = "login" // Vai para o login após deslogar
                         },

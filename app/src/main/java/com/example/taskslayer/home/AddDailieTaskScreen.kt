@@ -1,6 +1,7 @@
 package com.example.taskslayer.home
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +61,9 @@ import java.time.format.DateTimeFormatter
 fun AddDailieTaskRoute(
     onBackClick: () -> Unit
 ) {
+    BackHandler {
+        onBackClick() // Captura quando o usuario clicar no botao de voltar
+    }
     AddDailieTaskContent(
         isEditMode = false,
         onBackClick = onBackClick,
