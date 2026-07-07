@@ -2,14 +2,15 @@ package com.example.taskslayer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Orange = Color(0xFFFF9800)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Cores do tema escuro
+val LaranjaSamurai = Color(0xFFFF8C00)
+val CinzaAco = Color(0xFF4A5568)
+val AzulLamina = Color(0xFF4299E1)
+val CinzaGraphite = Color(0xFF1A202C)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
-val DarkGray = Color(0xFF33393A)
-
-val LightGray = Color(0xFF838388)
+// Cores do tema claro
+val LaranjaTerracota = Color(0xFFDD6B20)
+val PretoObisidiana = Color(0xFF2D3748)
+val AzulIndico = Color(0xFF2A4365)
+val BrancoPergaminho = Color(0xFFF4F1EA)
 

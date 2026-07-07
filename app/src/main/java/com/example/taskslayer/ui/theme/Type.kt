@@ -16,4 +16,4 @@ val Typography = Typography(
     )
 )
 
-val FonteDoTituloSlayer = FontFamily(Font(R.font.new_rocker))
+val FonteDoTituloSlayer = FontFamily(Font(R.font.samurai_blast))
