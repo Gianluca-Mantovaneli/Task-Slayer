@@ -1,5 +1,6 @@
 package com.example.taskslayer.ui.auth.login
 
+import com.example.taskslayer.R
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -24,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.taskslayer.R
 import com.example.taskslayer.ui.auth.AuthUiState
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
@@ -140,7 +140,7 @@ fun LoginContent(
                 value = senha,
                 onValueChange = { senha = it },
                 label = { Text(stringResource(R.string.label_senha)) },
-                visualTransformation = PasswordVisualTransformation() // Esconde a senha com bolinhas
+                visualTransformation = PasswordVisualTransformation()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
