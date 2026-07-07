@@ -57,10 +57,14 @@ import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun AddDailieTaskRoute(){
+fun AddDailieTaskRoute(
+    onBackClick: () -> Unit
+) {
     AddDailieTaskContent(
-        onBackClick = {},
-        onSaveTask = {titulo, descricao, dificuldade, deadline, repeticao, frequencia, lembretes ->}
+        isEditMode = false,
+        onBackClick = onBackClick,
+        onSaveTask = { titulo, descricao, dificuldade, deadline, repeticao, frequencia, lembretes -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
+        onDeleteTask = { onBackClick() }
     )
 }
 
@@ -154,7 +158,9 @@ fun AddDailieTaskContent(
         ){
             // titulo
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 value = titulo,
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
@@ -178,7 +184,9 @@ fun AddDailieTaskContent(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // Botao dificuldade Trivial
@@ -281,7 +289,9 @@ fun AddDailieTaskContent(
                         .padding(horizontal = 10.dp)
                 ) {
                     OutlinedTextField(
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
                         readOnly = true,
                         value = repeticao.name,
                         onValueChange = {},

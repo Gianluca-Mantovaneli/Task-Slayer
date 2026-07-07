@@ -57,8 +57,15 @@ import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun AddTodoTaskRoute(){
-    AddTodoTaskContent()
+fun AddTodoTaskRoute(
+    onBackClick: () -> Unit
+) {
+    AddTodoTaskContent(
+        isEditMode = false,
+        onBackClick = onBackClick,
+        onSaveTask = { titulo, descricao, dificuldade, deadline -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
+        onDeleteTask = { onBackClick() }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,7 +148,9 @@ fun AddTodoTaskContent(
         ){
             // titulo
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 value = titulo,
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
@@ -165,7 +174,9 @@ fun AddTodoTaskContent(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // Botao dificuldade Trivial

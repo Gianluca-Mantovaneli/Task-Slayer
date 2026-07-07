@@ -52,7 +52,10 @@ enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
 fun HomeRoute(
-    onSignOutClick: () -> Unit
+    onSignOutClick: () -> Unit,
+    onAddTodoClick: () -> Unit,
+    onAddDailieClick: () -> Unit,
+    onAddHabitClick: () -> Unit
 ){
     var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
 
@@ -60,7 +63,10 @@ fun HomeRoute(
         HomeContent(
             currentTheme = currentTheme,
             onThemeChange = { novoTema -> currentTheme = novoTema },
-            onSignOutClick = onSignOutClick
+            onSignOutClick = onSignOutClick,
+            onAddTodoClick = onAddTodoClick,
+            onAddDailieClick = onAddDailieClick,
+            onAddHabitClick = onAddHabitClick
         )
     }
 }
@@ -70,7 +76,10 @@ fun HomeRoute(
 fun HomeContent(
     currentTheme: AppThemeMode,
     onThemeChange: (AppThemeMode) -> Unit,
-    onSignOutClick: () -> Unit
+    onSignOutClick: () -> Unit,
+    onAddDailieClick: () -> Unit = {},
+    onAddTodoClick: () -> Unit = {},
+    onAddHabitClick: () -> Unit = {}
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
@@ -299,7 +308,14 @@ fun HomeContent(
                                     (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
                             }
                         },
-                    onClick = { /* TODO: Abrir criação de tarefa */ },
+                    onClick = {
+                        when (abaAtual) {
+                            AbasHome.TODO -> onAddTodoClick()
+                            AbasHome.DAILY -> onAddDailieClick()
+                            AbasHome.HABITS -> onAddHabitClick()
+                            else -> {}
+                        }
+                    },
                     containerColor = MaterialTheme.colorScheme.tertiary
                 ) {
                     Icon(

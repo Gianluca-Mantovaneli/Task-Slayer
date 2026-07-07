@@ -9,10 +9,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.taskslayer.home.AddDailieTaskRoute
+import com.example.taskslayer.home.AddHabitTaskRoute
 import com.example.taskslayer.home.HomeRoute
 import com.example.taskslayer.ui.auth.login.LoginRoute
 import com.example.taskslayer.ui.auth.register.RegisterRoute
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
+import com.example.taskslayer.home.AddTodoTaskRoute
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
@@ -32,10 +35,11 @@ class MainActivity : ComponentActivity() {
                 when (telaAtual) {
                     "login" -> LoginRoute(
                         onLoginSuccess = {
-                            telaAtual = "home"
+                            telaAtual = "home" // Vai para a home após fazer login
                         },
                         onNavigateToRegister = {
-                            telaAtual = "register"
+                            telaAtual =
+                                "register" // Vai para a tela de registro após clicar no botão
                         }
                     )
                     "register" -> RegisterRoute(
@@ -46,6 +50,39 @@ class MainActivity : ComponentActivity() {
                     "home" -> HomeRoute(
                         onSignOutClick = {
                             telaAtual = "login" // Vai para o login após deslogar
+                        },
+                        onAddTodoClick = {
+                            telaAtual =
+                                "addTodoTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                        },
+                        onAddDailieClick = {
+                            telaAtual =
+                                "addDailieTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                        },
+                        onAddHabitClick = {
+                            telaAtual =
+                                "addHabitsTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                        }
+                    )
+
+                    "addTodoTask" -> AddTodoTaskRoute(
+                        onBackClick = {
+                            telaAtual =
+                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                        }
+                    )
+
+                    "addDailieTask" -> AddDailieTaskRoute(
+                        onBackClick = {
+                            telaAtual =
+                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                        }
+                    )
+
+                    "addHabitsTask" -> AddHabitTaskRoute(
+                        onBackClick = {
+                            telaAtual =
+                                "home" // Vai para a home após voltar da tela de adicionar tarefa
                         }
                     )
                 }
