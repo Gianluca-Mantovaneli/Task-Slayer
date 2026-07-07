@@ -2,6 +2,7 @@ package com.example.taskslayer.home
 
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,8 +52,18 @@ import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun AddHabitTaskRoute(){
-    AddHabitTaskContent()
+fun AddHabitTaskRoute(
+    onBackClick: () -> Unit
+) {
+    BackHandler {
+        onBackClick() // Captura quando o usuario clicar no botao de voltar
+    }
+    AddHabitTaskContent(
+        isEditMode = false,
+        onBackClick = onBackClick,
+        onSaveTask = { titulo, descricao, dificuldade, efeitoHabito -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
+        onDeleteTask = { onBackClick() }
+    )
 }
 
 
@@ -133,7 +144,9 @@ fun AddHabitTaskContent(
         ){
             // titulo
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 value = titulo,
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
@@ -157,7 +170,9 @@ fun AddHabitTaskContent(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // Botao dificuldade Trivial
@@ -215,7 +230,9 @@ fun AddHabitTaskContent(
                 modifier = Modifier.padding(horizontal = 10.dp)
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -234,7 +251,9 @@ fun AddHabitTaskContent(
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(

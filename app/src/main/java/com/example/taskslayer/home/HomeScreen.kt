@@ -52,15 +52,25 @@ enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
 @Composable
 fun HomeRoute(
-    onSignOutClick: () -> Unit
+    abaAtual: AbasHome,
+    onAbaChange: (AbasHome) -> Unit,
+    onSignOutClick: () -> Unit,
+    onAddTodoClick: () -> Unit,
+    onAddDailieClick: () -> Unit,
+    onAddHabitClick: () -> Unit
 ){
     var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
 
     TaskSlayerTheme(themeMode = currentTheme) {
         HomeContent(
+            abaAtual = abaAtual,
+            onAbaChange = onAbaChange,
             currentTheme = currentTheme,
             onThemeChange = { novoTema -> currentTheme = novoTema },
-            onSignOutClick = onSignOutClick
+            onSignOutClick = onSignOutClick,
+            onAddTodoClick = onAddTodoClick,
+            onAddDailieClick = onAddDailieClick,
+            onAddHabitClick = onAddHabitClick
         )
     }
 }
@@ -68,13 +78,17 @@ fun HomeRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    abaAtual: AbasHome,
+    onAbaChange: (AbasHome) -> Unit,
     currentTheme: AppThemeMode,
     onThemeChange: (AppThemeMode) -> Unit,
-    onSignOutClick: () -> Unit
+    onSignOutClick: () -> Unit,
+    onAddDailieClick: () -> Unit = {},
+    onAddTodoClick: () -> Unit = {},
+    onAddHabitClick: () -> Unit = {}
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
-    var abaAtual by remember { mutableStateOf(AbasHome.STATS) }
     var tituloTopBar by remember { mutableStateOf("TaskSlayer") }
 
     // criando o soundManager
@@ -189,7 +203,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.STATS,
-                    onClick = { abaAtual = AbasHome.STATS },
+                    onClick = { onAbaChange(AbasHome.STATS) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -205,7 +219,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.TODO,
-                    onClick = { abaAtual = AbasHome.TODO },
+                    onClick = { onAbaChange(AbasHome.TODO) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -221,7 +235,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.HABITS,
-                    onClick = { abaAtual = AbasHome.HABITS },
+                    onClick = { onAbaChange(AbasHome.HABITS) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -237,7 +251,7 @@ fun HomeContent(
                         unselectedIconColor = MaterialTheme.colorScheme.tertiary
                     ),
                     selected = abaAtual == AbasHome.DAILY,
-                    onClick = { abaAtual = AbasHome.DAILY },
+                    onClick = { onAbaChange(AbasHome.DAILY) },
                     icon = {
                         Icon(
                             modifier = Modifier.size(40.dp),
@@ -269,47 +283,61 @@ fun HomeContent(
                 AbasHome.HABITS -> HabitsRoute(soundManager)
             }
 
-            FloatingActionButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .offset {
-                        IntOffset(floatingButtonOffsetX.roundToInt(), floatingButtonOffsetY.roundToInt())
-                    }
-                    .pointerInput(containerWidth, containerHeight) {
-                        if (containerWidth == 0f || containerHeight == 0f) return@pointerInput
-                        val fabSizePx = 56.dp.toPx()
-                        val marginPx = 16.dp.toPx()
-                        val minX = -(containerWidth - fabSizePx - (marginPx * 2))
-                        val maxX = 0f
-                        val minY = -(containerHeight - fabSizePx - (marginPx * 2))
-                        val maxY = 0f
+            if(abaAtual != AbasHome.STATS) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .offset {
+                            IntOffset(
+                                floatingButtonOffsetX.roundToInt(),
+                                floatingButtonOffsetY.roundToInt()
+                            )
+                        }
+                        .pointerInput(containerWidth, containerHeight) {
+                            if (containerWidth == 0f || containerHeight == 0f) return@pointerInput
+                            val fabSizePx = 56.dp.toPx()
+                            val marginPx = 16.dp.toPx()
+                            val minX = -(containerWidth - fabSizePx - (marginPx * 2))
+                            val maxX = 0f
+                            val minY = -(containerHeight - fabSizePx - (marginPx * 2))
+                            val maxY = 0f
 
-                        detectDragGestures { change, dragAmount ->
-                            change.consume()
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
 
-                            // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
-                            floatingButtonOffsetX = (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
-                            floatingButtonOffsetY = (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
+                                // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
+                                floatingButtonOffsetX =
+                                    (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
+                                floatingButtonOffsetY =
+                                    (floatingButtonOffsetY + dragAmount.y).coerceIn(minY, maxY)
+                            }
+                        },
+                    onClick = {
+                        when (abaAtual) {
+                            AbasHome.TODO -> onAddTodoClick()
+                            AbasHome.DAILY -> onAddDailieClick()
+                            AbasHome.HABITS -> onAddHabitClick()
+                            else -> {}
                         }
                     },
-                onClick = { /* TODO: Abrir criação de tarefa */ },
-                containerColor = MaterialTheme.colorScheme.tertiary
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .offset(x = 2.dp, y = 2.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = null,
-                    tint = Color.Black.copy(alpha = 0.7f)
-                )
-                Icon(
-                    modifier = Modifier.size(30.dp),
-                    painter = painterResource(id = TaskSlayerIcons.AddIcon),
-                    contentDescription = "Adicionar Tarefa",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                    containerColor = MaterialTheme.colorScheme.tertiary
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .offset(x = 2.dp, y = 2.dp),
+                        painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                        contentDescription = null,
+                        tint = Color.Black.copy(alpha = 0.7f)
+                    )
+                    Icon(
+                        modifier = Modifier.size(30.dp),
+                        painter = painterResource(id = TaskSlayerIcons.AddIcon),
+                        contentDescription = "Adicionar Tarefa",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
@@ -320,6 +348,8 @@ fun HomeContent(
 fun HomeContentPreview(){
     TaskSlayerTheme {
         HomeContent(
+            abaAtual = AbasHome.STATS,
+            onAbaChange = {},
             currentTheme = AppThemeMode.DARK,
             onThemeChange = {},
             onSignOutClick = {}
