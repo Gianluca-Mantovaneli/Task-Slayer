@@ -62,9 +62,9 @@ fun HomeRoute(
     onSignOutClick: () -> Unit,
     onAddTodoClick: (String?) -> Unit,
     onAddDailieClick: () -> Unit,
-    onAddHabitClick: () -> Unit
+    onAddHabitClick: (String?) -> Unit
 ){
-    var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
+    var currentTheme by remember { mutableStateOf(AppThemeMode.SYSTEM) }
 
     TaskSlayerTheme(themeMode = currentTheme) {
         HomeContent(
@@ -90,7 +90,7 @@ fun HomeContent(
     onSignOutClick: () -> Unit,
     onAddDailieClick: () -> Unit = {},
     onAddTodoClick: (String?) -> Unit = {},
-    onAddHabitClick: () -> Unit = {}
+    onAddHabitClick: (String?) -> Unit = {}
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
@@ -290,7 +290,12 @@ fun HomeContent(
                     }
                 )
                 AbasHome.DAILY -> DailieRoute(soundManager)
-                AbasHome.HABITS -> HabitsRoute(soundManager)
+                AbasHome.HABITS -> HabitsRoute(
+                    soundManager,
+                    onHabitClick = { habitId ->
+                        onAddHabitClick(habitId)
+                    }
+                )
             }
 
             if(abaAtual != AbasHome.STATS) {
@@ -327,7 +332,7 @@ fun HomeContent(
                         when (abaAtual) {
                             AbasHome.TODO -> onAddTodoClick(null)
                             AbasHome.DAILY -> onAddDailieClick()
-                            AbasHome.HABITS -> onAddHabitClick()
+                            AbasHome.HABITS -> onAddHabitClick(null)
                             else -> {}
                         }
                     },

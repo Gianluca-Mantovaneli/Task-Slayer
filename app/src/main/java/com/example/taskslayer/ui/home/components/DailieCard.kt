@@ -44,7 +44,7 @@ fun DailieCard(
     titulo : String ,
     frequencia : List<String> ,
     dificuldade : Dificulty,
-    soundManager: SoundEffectsManager?
+    soundManager: SoundEffectsManager?,
 ){
     var done by remember { mutableStateOf(false) }
 

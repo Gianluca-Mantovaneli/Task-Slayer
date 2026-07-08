@@ -1,7 +1,7 @@
 package com.example.taskslayer.ui.home.habit
 
-
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,41 +26,102 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
-
 @Composable
 fun AddHabitTaskRoute(
-    onBackClick: () -> Unit
+    habitId: String? = null, // 🎯 Recebe o ID opcional para caso de Edição
+    onBackClick: () -> Unit,
+    viewModel: AddHabitTaskViewModel = viewModel() // 🎯 Injeta a ViewModel de Hábitos
 ) {
-    BackHandler {
-        onBackClick() // Captura quando o usuario clicar no botao de voltar
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val ctx = LocalContext.current
+    var mensagemSucesso by remember { mutableStateOf("") }
+
+    // Preparando o terreno caso seja uma edição de Hábito existente
+    LaunchedEffect(habitId) {
+        if (!habitId.isNullOrBlank()) {
+            viewModel.prepararParaEdicao(habitId)
+        }
     }
+
+    // Captura quando o usuário clica no botão físico/gesto de voltar do Android
+    BackHandler {
+        viewModel.resetCompletamente()
+        onBackClick()
+    }
+
+    // Vigia do estado: Reage aos retornos da ViewModel
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is AddHabitUiState.Success -> {
+                Toast.makeText(ctx, mensagemSucesso, Toast.LENGTH_SHORT).show()
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
+
+            is AddHabitUiState.Error -> {
+                Toast.makeText(ctx, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiStateToIdle()
+            }
+
+            else -> {}
+        }
+    }
+
     AddHabitTaskContent(
-        isEditMode = false,
-        onBackClick = onBackClick,
-        onSaveTask = { titulo, descricao, dificuldade, efeitoHabito -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
-        onDeleteTask = { onBackClick() }
+        viewModel = viewModel,
+        isEditMode = viewModel.isEditMode,
+        onBackClick = {
+            viewModel.resetCompletamente()
+            onBackClick()
+        },
+        onSaveTask = { titulo, descricao, dificuldade, efeitoHabito ->
+            mensagemSucesso = "Hábito salvo com sucesso!"
+            // Salvando com Repetition.NONE padrão já que a tela não possui esse seletor ainda
+            viewModel.salvarTarefaHabit(
+                titulo,
+                descricao,
+                dificuldade,
+                efeitoHabito,
+                Repetition.NONE
+            )
+        },
+        onDeleteTask = {
+            if (habitId != null) {
+                mensagemSucesso = "Hábito deletado com sucesso!"
+                viewModel.deletarTarefaHabit(habitId)
+            } else {
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
+        }
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddHabitTaskContent(
+    viewModel: AddHabitTaskViewModel = viewModel(),
     isEditMode: Boolean = false,
     onBackClick: () -> Unit = {},
     onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, efeitoHabito: Boolean) -> Unit = {_,_,_,_ ->},
@@ -71,16 +132,26 @@ fun AddHabitTaskContent(
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
     var efeitoHabito by rememberSaveable { mutableStateOf(true) }
 
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Para validar se o formulário está completo o sufuciente para o usuario salvar a tarefa
-    val isFormValid =
-        titulo.isNotBlank() &&
-        dificuldadeSelecionada != Dificulty.NONE
+    // 🎯 Captura o Hábito carregado do banco para preencher a tela na edição
+    LaunchedEffect(uiState) {
+        if (uiState is AddHabitUiState.Loaded) {
+            val habit = (uiState as AddHabitUiState.Loaded).habit
+            titulo = habit.title
+            descricao = habit.description
+            dificuldadeSelecionada = habit.dificuldade
+            efeitoHabito = habit.impact
+
+            viewModel.resetUiStateToIdle()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Adicionar Hábito")},
+                // 🎯 Título dinâmico baseado no modo da tela
+                title = { Text(text = if (isEditMode) "Editar Hábito" else "Adicionar Hábito") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -94,7 +165,7 @@ fun AddHabitTaskContent(
                     }
                 },
                 actions = {
-                    if(isEditMode){
+                    if (isEditMode) {
                         IconButton(onClick = onDeleteTask) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -103,16 +174,11 @@ fun AddHabitTaskContent(
                             )
                         }
                     }
-                    IconButton(onClick = {
-                        onSaveTask(
-                            titulo,
-                            descricao,
-                            dificuldadeSelecionada,
-                            efeitoHabito
-
-                        )
-                    },
-                        enabled = isFormValid
+                    IconButton(
+                        onClick = {
+                            onSaveTask(titulo, descricao, dificuldadeSelecionada, efeitoHabito)
+                        }
+                        // 🎯 enabled removido para permitir validação com Toast via ViewModel!
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
@@ -122,9 +188,8 @@ fun AddHabitTaskContent(
                     }
                 }
             )
-
         }
-    ) {paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -132,8 +197,8 @@ fun AddHabitTaskContent(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            // titulo
+        ) {
+            // Título
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -142,7 +207,7 @@ fun AddHabitTaskContent(
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
             )
-            // descricao
+            // Descrição
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,7 +217,7 @@ fun AddHabitTaskContent(
                 onValueChange = { descricao = it },
                 label = { Text("Descrição") },
             )
-            // dificuldade
+            // Dificuldade
             Text(
                 text = "Dificuldade",
                 style = MaterialTheme.typography.titleMedium,
@@ -166,11 +231,9 @@ fun AddHabitTaskContent(
                     .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Botao dificuldade Trivial
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.TRIVIAL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.trivialDificultyIcon),
@@ -178,11 +241,9 @@ fun AddHabitTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Fácil
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.FACIL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.easyDificultyIcon),
@@ -190,7 +251,6 @@ fun AddHabitTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Médio
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.MEDIO },
                     modifier = Modifier.weight(1f)
@@ -201,11 +261,9 @@ fun AddHabitTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Difícil
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.DIFICIL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.hardDificultyIcon),
@@ -214,6 +272,8 @@ fun AddHabitTaskContent(
                     )
                 }
             }
+
+            // Seção de Efeito
             Text(
                 text = "Efeito",
                 style = MaterialTheme.typography.titleMedium,
@@ -250,7 +310,7 @@ fun AddHabitTaskContent(
                 IconButton(
                     onClick = { efeitoHabito = true },
                     modifier = Modifier.weight(1f)
-                ){
+                ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.positiveHabitIcon),
                         contentDescription = "Efeito positivo",
@@ -260,7 +320,7 @@ fun AddHabitTaskContent(
                 IconButton(
                     onClick = { efeitoHabito = false },
                     modifier = Modifier.weight(1f)
-                ){
+                ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.negativeHabitIcon),
                         contentDescription = "Efeito negativo",
@@ -271,7 +331,6 @@ fun AddHabitTaskContent(
         }
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable

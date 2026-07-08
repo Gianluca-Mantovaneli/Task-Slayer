@@ -52,30 +52,16 @@ class TaskRepository {
     }
 
     fun deletarTodo(
-        uid: String,
-        taskId: String,
-        onSucesso: () -> Unit,
-        onErro: (Exception) -> Unit
+        uid: String, taskId: String, onSucesso: () -> Unit, onErro: (Exception) -> Unit
     ) {
-
-        db.collection("usuarios")
-            .document(uid)
-            .collection("todos")
-            .document(taskId)
+        getUsuarioDocument(uid).collection("todos").document(taskId)
             .delete()
-            .addOnSuccessListener {
-                onSucesso()
-            }
-            .addOnFailureListener { exception ->
-                onErro(exception)
-            }
+            .addOnSuccessListener { onSucesso() }
+            .addOnFailureListener { exception -> onErro(exception) }
     }
 
     fun salvarDailie(
-        uid: String,
-        dailie: Dailie,
-        onSucesso: () -> Unit,
-        onErro: (Exception) -> Unit
+        uid: String, dailie: Dailie, onSucesso: () -> Unit, onErro: (Exception) -> Unit
     ) {
         val colecaoDailies = getUsuarioDocument(uid).collection("dailies")
         val documento =
@@ -95,6 +81,33 @@ class TaskRepository {
                 onSucesso(lista)
             }
             .addOnFailureListener { onErro(it) }
+    }
+
+    fun buscarDailiePorId(
+        uid: String, taskId: String, onSucesso: (Dailie) -> Unit, onErro: (Exception) -> Unit
+    ) {
+        getUsuarioDocument(uid).collection("dailies").document(taskId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val dailie = documentSnapshot.toObject(Dailie::class.java)
+
+                if (dailie != null && documentSnapshot.exists()) {
+                    val dailieComId = dailie.copy(id = documentSnapshot.id)
+                    onSucesso(dailieComId)
+                } else {
+                    onErro(Exception("Missão diária não encontrada!"))
+                }
+            }
+            .addOnFailureListener { exception -> onErro(exception) }
+    }
+
+    fun deletarDailie(
+        uid: String, taskId: String, onSucesso: () -> Unit, onErro: (Exception) -> Unit
+    ) {
+        getUsuarioDocument(uid).collection("dailies").document(taskId)
+            .delete()
+            .addOnSuccessListener { onSucesso() }
+            .addOnFailureListener { exception -> onErro(exception) }
     }
 
     fun salvarHabit(uid: String, habit: Habit, onSucesso: () -> Unit, onErro: (Exception) -> Unit) {
@@ -118,6 +131,33 @@ class TaskRepository {
             .addOnFailureListener { onErro(it) }
     }
 
+    fun buscarHabitPorId(
+        uid: String, taskId: String, onSucesso: (Habit) -> Unit, onErro: (Exception) -> Unit
+    ) {
+        getUsuarioDocument(uid).collection("habits").document(taskId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val habit = documentSnapshot.toObject(Habit::class.java)
+
+                if (habit != null && documentSnapshot.exists()) {
+                    val habitComId = habit.copy(id = documentSnapshot.id)
+                    onSucesso(habitComId)
+                } else {
+                    onErro(Exception("Hábito não encontrado!"))
+                }
+            }
+            .addOnFailureListener { exception -> onErro(exception) }
+    }
+
+    fun deletarHabit(
+        uid: String, taskId: String, onSucesso: () -> Unit, onErro: (Exception) -> Unit
+    ) {
+        getUsuarioDocument(uid).collection("habits").document(taskId)
+            .delete()
+            .addOnSuccessListener { onSucesso() }
+            .addOnFailureListener { exception -> onErro(exception) }
+    }
+
     fun atualizarStatusTarefa(
         uid: String,
         taskId: String,
@@ -126,12 +166,8 @@ class TaskRepository {
         onSucesso: () -> Unit,
         onErro: (Exception) -> Unit
     ) {
-        // tipoColecao deve ser "todos", "dailies" ou "habits"
         getUsuarioDocument(uid).collection(tipoColecao).document(taskId)
-            .update(
-                "done",
-                novoStatus
-            ) // 🪄 Atualiza cirurgicamente apenas o campo 'done' na nuvem!
+            .update("done", novoStatus)
             .addOnSuccessListener { onSucesso() }
             .addOnFailureListener { onErro(it) }
     }

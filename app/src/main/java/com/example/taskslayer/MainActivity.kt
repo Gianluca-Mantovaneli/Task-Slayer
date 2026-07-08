@@ -68,7 +68,8 @@ class MainActivity : ComponentActivity() {
                             telaAtual =
                                 "addDailieTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         },
-                        onAddHabitClick = {
+                        onAddHabitClick = { idRecebido ->
+                            idTaskParaEditar = idRecebido
                             telaAtual =
                                 "addHabitsTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         }
@@ -90,9 +91,10 @@ class MainActivity : ComponentActivity() {
                     )
 
                     "addHabitsTask" -> AddHabitTaskRoute(
+                        habitId = idTaskParaEditar,
                         onBackClick = {
-                            telaAtual =
-                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                            idTaskParaEditar = null
+                            telaAtual = "home"
                         }
                     )
                 }

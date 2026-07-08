@@ -38,7 +38,8 @@ fun HabitCard(
     titulo : String,
     habitEffect: Boolean,
     dificuldade : Dificulty,
-    sounManager: SoundEffectsManager?
+    soundManager: SoundEffectsManager?,
+    onHabitClick: () -> Unit = {}
 ){
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
@@ -53,6 +54,7 @@ fun HabitCard(
     }
 
     Card(
+        onClick = onHabitClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
@@ -75,7 +77,7 @@ fun HabitCard(
         ) {
             Box(
                 modifier = Modifier.clickable{
-                    sounManager?.playSlashSound()
+                    soundManager?.playSlashSound()
                 }
             ){
                 Icon(
@@ -140,7 +142,7 @@ fun PreviewHabitCard(){
             "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             true,
             Dificulty.TRIVIAL,
-            sounManager = null
+            soundManager = null
         )
     }
 }
