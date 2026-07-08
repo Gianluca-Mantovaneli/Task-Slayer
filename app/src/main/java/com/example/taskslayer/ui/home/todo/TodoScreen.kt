@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,9 +75,11 @@ fun TodoContent(
     ){
         if (tasks.isEmpty()) {
             Text(
-                text = "Nenhuma tarefa pendente. Descanse, Samurai!",
+                text = "Nenhuma tarefa pendente. \nDescanse, Samurai!",
                 modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
             )
         } else {
             // Listando as tarefas do banco desse usuario

@@ -51,6 +51,26 @@ class TaskRepository {
             }
     }
 
+    fun deletarTodo(
+        uid: String,
+        taskId: String,
+        onSucesso: () -> Unit,
+        onErro: (Exception) -> Unit
+    ) {
+
+        db.collection("usuarios")
+            .document(uid)
+            .collection("todos")
+            .document(taskId)
+            .delete()
+            .addOnSuccessListener {
+                onSucesso()
+            }
+            .addOnFailureListener { exception ->
+                onErro(exception)
+            }
+    }
+
     fun salvarDailie(
         uid: String,
         dailie: Dailie,

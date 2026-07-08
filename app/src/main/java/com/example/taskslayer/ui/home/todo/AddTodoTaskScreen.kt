@@ -60,10 +60,12 @@ import java.time.format.DateTimeFormatter
 fun AddTodoTaskRoute(
     taskId: String? = null,
     onBackClick: () -> Unit,
+    onDeleteClick: () -> Unit = {},
     viewModel: AddTodoTaskViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
+    var mensagemSucesso by remember { mutableStateOf("") }
 
     // Preparando para edição
     LaunchedEffect(taskId) {
@@ -79,10 +81,20 @@ fun AddTodoTaskRoute(
     }
 
     LaunchedEffect(uiState) {
-        if (uiState is AddTodoUiState.Success) {
-            Toast.makeText(ctx, "Tarefa salva com sucesso!", Toast.LENGTH_SHORT).show()
-            viewModel.resetCompletamente()
-            onBackClick()
+        when (val state = uiState) {
+            is AddTodoUiState.Success -> {
+                Toast.makeText(ctx, mensagemSucesso, Toast.LENGTH_SHORT).show()
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
+
+            is AddTodoUiState.Error -> {
+                // Mostra o Toast com a mensagem exata que a ViewModel mandou!
+                Toast.makeText(ctx, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiStateToIdle()
+            }
+
+            else -> {} // Não faz nada se for Loading ou Loaded
         }
     }
 
@@ -94,12 +106,17 @@ fun AddTodoTaskRoute(
             onBackClick()
         },
         onSaveTask = { titulo, descricao, dificuldade, deadline ->
+            mensagemSucesso = "Tarefa salva com sucesso!"
             viewModel.salvarTarefaTodo(titulo, descricao, dificuldade, deadline)
         },
         onDeleteTask = {
-            // TODO: Ligar a função de deletar da VM aqui depois!
-            viewModel.resetCompletamente()
-            onBackClick()
+            if (taskId != null) {
+                mensagemSucesso = "Tarefa deletada com sucesso!"
+                viewModel.deletarTarefaTodo(taskId)
+            } else {
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
         }
     )
 }
@@ -170,7 +187,6 @@ fun AddTodoTaskContent(
                                 deadline.toString()
                             )
                         },
-                        enabled = isFormValid
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,

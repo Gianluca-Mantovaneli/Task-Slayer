@@ -1,5 +1,6 @@
 package com.example.taskslayer.ui.home.todo
 
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -103,6 +104,29 @@ class AddTodoTaskViewModel : ViewModel() {
             onErro = { exception ->
                 _uiState.value = AddTodoUiState.Error(
                     exception.localizedMessage ?: "Houve um erro ao salvar sua tarefa."
+                )
+            }
+        )
+    }
+
+    fun deletarTarefaTodo(taskId: String) {
+        val uidLogado = auth.currentUser?.uid
+        if (uidLogado == null) {
+            _uiState.value = AddTodoUiState.Error("Erro: Usuário não autenticado.")
+            return
+        }
+
+        _uiState.value = AddTodoUiState.Loading
+
+        taskRepository.deletarTodo(
+            uid = uidLogado,
+            taskId = taskId,
+            onSucesso = {
+                _uiState.value = AddTodoUiState.Success
+            },
+            onErro = { exception ->
+                _uiState.value = AddTodoUiState.Error(
+                    exception.localizedMessage ?: "Erro ao deletar a missão."
                 )
             }
         )
