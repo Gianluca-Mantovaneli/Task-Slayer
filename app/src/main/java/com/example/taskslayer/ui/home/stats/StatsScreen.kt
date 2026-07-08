@@ -1,4 +1,4 @@
-package com.example.taskslayer.home
+package com.example.taskslayer.ui.home.stats
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background

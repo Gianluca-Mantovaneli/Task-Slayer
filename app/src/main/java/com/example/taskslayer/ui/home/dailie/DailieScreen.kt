@@ -1,4 +1,4 @@
-package com.example.taskslayer.home
+package com.example.taskslayer.ui.home.dailie
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -7,38 +7,40 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.taskslayer.domain.model.Dificulty
-import com.example.taskslayer.home.components.TodoCard
+import com.example.taskslayer.ui.home.components.DailieCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 @Composable
-fun TodoRoute(soundManager: SoundEffectsManager?){
-    TodoContent(
+fun DailieRoute(soundManager: SoundEffectsManager?){
+    DailieContent(
         soundManager = soundManager
     )
 }
 
 @Composable
-fun TodoContent(
+fun DailieContent(
     soundManager: SoundEffectsManager?
 ){
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        contentAlignment = Alignment.Center
     ){
         LazyColumn() {
-            item {
-                TodoCard(
+            items(
+                count = 7,
+            ) {
+                DailieCard(
                     "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    "10/10/2023",
+                    listOf("Seg", "Qua", "Sex"),
                     Dificulty.TRIVIAL,
-                    soundManager = soundManager
+                    soundManager
                 )
             }
         }
@@ -47,9 +49,9 @@ fun TodoContent(
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-fun TodoContentPreview(){
+fun DailieContentPreview(){
     TaskSlayerTheme {
-        TodoContent(
+        DailieContent(
             soundManager = null
         )
     }

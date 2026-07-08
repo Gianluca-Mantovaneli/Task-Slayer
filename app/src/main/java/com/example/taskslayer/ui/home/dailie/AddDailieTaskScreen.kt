@@ -1,5 +1,4 @@
-package com.example.taskslayer.home
-
+package com.example.taskslayer.ui.home.dailie
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,30 +20,38 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import java.time.Instant
@@ -52,16 +60,16 @@ import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun AddHabitTaskRoute(
+fun AddDailieTaskRoute(
     onBackClick: () -> Unit
 ) {
     BackHandler {
         onBackClick() // Captura quando o usuario clicar no botao de voltar
     }
-    AddHabitTaskContent(
+    AddDailieTaskContent(
         isEditMode = false,
         onBackClick = onBackClick,
-        onSaveTask = { titulo, descricao, dificuldade, efeitoHabito -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
+        onSaveTask = { titulo, descricao, dificuldade, deadline, repeticao, frequencia, lembretes -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
         onDeleteTask = { onBackClick() }
     )
 }
@@ -69,27 +77,37 @@ fun AddHabitTaskRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddHabitTaskContent(
+fun AddDailieTaskContent(
     isEditMode: Boolean = false,
-    onBackClick: () -> Unit = {},
-    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, efeitoHabito: Boolean) -> Unit = {_,_,_,_ ->},
+    onBackClick: () -> Unit,
+    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String, repeticao: Repetition, frequencia: Int, lembretes: List<String>) -> Unit = {_,_,_,_,_,_,_ ->},
     onDeleteTask: () -> Unit = {}
 ){
     var titulo by rememberSaveable { mutableStateOf("") }
     var descricao by rememberSaveable { mutableStateOf("") }
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
-    var efeitoHabito by rememberSaveable { mutableStateOf(true) }
+    var dataInicio by rememberSaveable { mutableStateOf("") }
+    var repeticao by rememberSaveable { mutableStateOf(Repetition.NONE) }
+    var frequencia by rememberSaveable { mutableIntStateOf(1) }
+    var lembretes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    var menuExpandido by remember { mutableStateOf(false) }
 
     // Para validar se o formulário está completo o sufuciente para o usuario salvar a tarefa
     val isFormValid =
         titulo.isNotBlank() &&
-        dificuldadeSelecionada != Dificulty.NONE
+        dificuldadeSelecionada != Dificulty.NONE &&
+        dataInicio.isNotBlank() &&
+        repeticao != Repetition.NONE &&
+        frequencia > 0
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Adicionar Hábito")},
+                title = { Text(text = "Adicionar Task Diária")},
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -117,11 +135,13 @@ fun AddHabitTaskContent(
                             titulo,
                             descricao,
                             dificuldadeSelecionada,
-                            efeitoHabito
-
+                            dataInicio,
+                            repeticao,
+                            frequencia,
+                            lembretes
                         )
                     },
-                        enabled = isFormValid
+                    enabled = isFormValid
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
@@ -140,7 +160,7 @@ fun AddHabitTaskContent(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ){
             // titulo
             OutlinedTextField(
@@ -167,7 +187,7 @@ fun AddHabitTaskContent(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 10.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
             Row(
                 modifier = Modifier
@@ -223,69 +243,148 @@ fun AddHabitTaskContent(
                     )
                 }
             }
+            // data inicio
             Text(
-                text = "Efeito",
+                text = "Data Inicial (Start)",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 10.dp)
+                modifier = Modifier.padding(horizontal = 10.dp),
+                textAlign = TextAlign.Center
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp)
+            ) {
+                OutlinedTextField(
+                    value = dataInicio,
+                    onValueChange = {},
+                    label = { Text("Selecione Uma Data...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline
+                    )
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { showDatePicker = true }
+                )
+            }
+            // Frequencia
+            Text(
+                text = "Frequência",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 10.dp),
             )
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "Positivo",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                Text(
-                    text = "Negativo",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                ExposedDropdownMenuBox(
+                    expanded = menuExpandido,
+                    onExpandedChange = { menuExpandido = !menuExpandido },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp)
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        readOnly = true,
+                        value = repeticao.name,
+                        onValueChange = {},
+                        label = { Text("Repetição") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpandido) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = menuExpandido,
+                        onDismissRequest = { menuExpandido = false }
+                    ) {
+                        Repetition.entries.filter { it != Repetition.NONE }.forEach { opcao ->
+                            DropdownMenuItem(
+                                text = { Text(text = opcao.name, style = MaterialTheme.typography.bodyLarge) },
+                                onClick = {
+                                    repeticao = opcao
+                                    menuExpandido = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp),
+                    value = if (frequencia == 0) "" else frequencia.toString(),
+                    onValueChange = { novoTexto ->
+                        if (novoTexto.all { it.isDigit() }) {
+                            frequencia = novoTexto.toIntOrNull() ?: 0
+                        }
+                    },
+                    label = { Text("A cada") },
+                    placeholder = { Text("Ex: 1, 2, 3, etc...") },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    )
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = { efeitoHabito = true },
-                    modifier = Modifier.weight(1f)
-                ){
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.positiveHabitIcon),
-                        contentDescription = "Efeito positivo",
-                        tint = if (efeitoHabito) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    )
+        }
+    }
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedDateMillis = datePickerState.selectedDateMillis
+                    if (selectedDateMillis != null) {
+
+                        val date = Instant.ofEpochMilli(selectedDateMillis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
+                        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        dataInicio = date.format(formatter)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("Confirmar")
                 }
-                IconButton(
-                    onClick = { efeitoHabito = false },
-                    modifier = Modifier.weight(1f)
-                ){
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.negativeHabitIcon),
-                        contentDescription = "Efeito negativo",
-                        tint = if (!efeitoHabito) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    )
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
                 }
             }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }
 
 
+
+
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun AddHabitTaskContentPreview(){
+fun AddDailieTaskContentPreview(){
     TaskSlayerTheme {
-        AddHabitTaskContent()
+        AddDailieTaskContent(
+            onBackClick = {},
+            onSaveTask = {titulo, descricao, dificuldade, deadline, repeticao, frequencia, lembretes ->}
+        )
     }
 }

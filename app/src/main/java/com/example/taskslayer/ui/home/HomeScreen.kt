@@ -1,4 +1,4 @@
-package com.example.taskslayer.home
+package com.example.taskslayer.ui.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -42,11 +42,16 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.R
 import com.example.taskslayer.tools.SoundEffectsManager
+import com.example.taskslayer.ui.home.dailie.DailieRoute
+import com.example.taskslayer.ui.home.habit.HabitsRoute
+import com.example.taskslayer.ui.home.stats.StatsRoute
+import com.example.taskslayer.ui.home.todo.TodoRoute
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import kotlin.math.roundToInt
 import com.example.taskslayer.ui.theme.AppThemeMode
+import com.google.firebase.auth.FirebaseAuth
 
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
@@ -141,7 +146,7 @@ fun HomeContent(
                                 },
                                 onClick = {
                                     expandido = false
-                                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                    FirebaseAuth.getInstance().signOut()
                                     onSignOutClick()
                                 }
                             )

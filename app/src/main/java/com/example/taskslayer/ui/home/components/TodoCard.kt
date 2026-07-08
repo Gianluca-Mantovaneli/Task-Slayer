@@ -1,4 +1,4 @@
-package com.example.taskslayer.home.components
+package com.example.taskslayer.ui.home.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -6,19 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -145,7 +140,9 @@ fun TodoCard(
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).offset(x= 2.dp, y = 2.dp),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .offset(x = 2.dp, y = 2.dp),
                     tint = Color.Black.copy(alpha = 0.7f)
                 )
                 Icon(

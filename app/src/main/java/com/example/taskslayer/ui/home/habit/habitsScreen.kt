@@ -1,4 +1,4 @@
-package com.example.taskslayer.home
+package com.example.taskslayer.ui.home.habit
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -6,14 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.example.taskslayer.domain.model.Dificulty
-import com.example.taskslayer.home.components.DailieCard
-import com.example.taskslayer.home.components.HabitCard
+import com.example.taskslayer.ui.home.components.HabitCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
@@ -32,7 +30,7 @@ fun HabitsContent(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        contentAlignment = Alignment.Center
     ){
         LazyColumn() {
             items(
