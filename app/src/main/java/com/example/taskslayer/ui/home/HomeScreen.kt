@@ -60,7 +60,7 @@ fun HomeRoute(
     abaAtual: AbasHome,
     onAbaChange: (AbasHome) -> Unit,
     onSignOutClick: () -> Unit,
-    onAddTodoClick: () -> Unit,
+    onAddTodoClick: (String?) -> Unit,
     onAddDailieClick: () -> Unit,
     onAddHabitClick: () -> Unit
 ){
@@ -89,7 +89,7 @@ fun HomeContent(
     onThemeChange: (AppThemeMode) -> Unit,
     onSignOutClick: () -> Unit,
     onAddDailieClick: () -> Unit = {},
-    onAddTodoClick: () -> Unit = {},
+    onAddTodoClick: (String?) -> Unit = {},
     onAddHabitClick: () -> Unit = {}
 ){
     val snackbarHostState = remember { SnackbarHostState() }
@@ -283,7 +283,12 @@ fun HomeContent(
             when (abaAtual) {
                 // Roteamento das abas
                 AbasHome.STATS -> StatsRoute(soundManager)
-                AbasHome.TODO -> TodoRoute(soundManager)
+                AbasHome.TODO -> TodoRoute(
+                    soundManager,
+                    onNavigateToEdit = { taskId ->
+                        onAddTodoClick(taskId)
+                    }
+                )
                 AbasHome.DAILY -> DailieRoute(soundManager)
                 AbasHome.HABITS -> HabitsRoute(soundManager)
             }
@@ -320,7 +325,7 @@ fun HomeContent(
                         },
                     onClick = {
                         when (abaAtual) {
-                            AbasHome.TODO -> onAddTodoClick()
+                            AbasHome.TODO -> onAddTodoClick(null)
                             AbasHome.DAILY -> onAddDailieClick()
                             AbasHome.HABITS -> onAddHabitClick()
                             else -> {}

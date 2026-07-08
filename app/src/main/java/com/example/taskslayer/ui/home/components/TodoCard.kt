@@ -2,6 +2,7 @@ package com.example.taskslayer.ui.home.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,11 +41,13 @@ import com.example.taskslayer.ui.theme.TaskSlayerTheme
 @Composable
 fun TodoCard(
     titulo: String ,
-    deadline: String ,
+    deadline: String? = null,
     dificuldade: Dificulty,
-    soundManager: SoundEffectsManager?
+    soundManager: SoundEffectsManager?,
+    done: Boolean,
+    onTaskCheckedChange: (Boolean) -> Unit = {},
+    onCardClick: () -> Unit = {}
 ){
-    var done by remember { mutableStateOf(false) }
 
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
@@ -58,7 +61,8 @@ fun TodoCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
-            .padding(10.dp),
+            .padding(10.dp)
+            .clickable { onCardClick() },
         shape = AbsoluteCutCornerShape(topLeft = 20.dp, bottomRight = 20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
@@ -109,8 +113,9 @@ fun TodoCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ) {
+
                     Text(
-                        text = deadline,
+                        text = deadline ?: "Sem prazo",
                         style = MaterialTheme.typography.titleMedium.copy(
                             shadow = Shadow(
                                 color = Color.Black.copy(alpha = 0.6f),
@@ -125,13 +130,14 @@ fun TodoCard(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
+
                     SlayerChecker(
                         checked = done,
                         onCheckedChange = { atual ->
-                            done = atual
                             if (atual) {
                                 soundManager?.playSlashSound()
                             }
+                            onTaskCheckedChange(atual)
                         }
                     )
                 }
@@ -163,8 +169,9 @@ fun PreviewTodoCard(){
     TaskSlayerTheme {
         TodoCard(
             "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "10/10/2023",
+            null,
             Dificulty.TRIVIAL,
+            done = false,
             soundManager = null
         )
     }

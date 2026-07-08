@@ -15,7 +15,7 @@ object TaskSlayerIcons {
     val dailyMenuIcon = R.drawable.dailies_icon_botton_menu
     val habitsMenuIcon = R.drawable.habits_icon_botton_menu
     val statsMenuIcon = R.drawable.status_player_icon_botton_menu
-    val trivialDificultyIcon = R.drawable.easy_dificuty_icon
+    val trivialDificultyIcon = R.drawable.trivial_dificuty_icon
     val easyDificultyIcon = R.drawable.easy_dificuty_icon
     val mediumDificultyIcon = R.drawable.medium_dificuty_icon
     val hardDificultyIcon = R.drawable.hard_dificuty_icon
