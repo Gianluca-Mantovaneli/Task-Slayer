@@ -78,7 +78,8 @@ fun HabitsContent(
                 text = "Nenhum hábito cadastrado. \nComece sua jornada!",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center)
             )
         } else {
             LazyColumn {

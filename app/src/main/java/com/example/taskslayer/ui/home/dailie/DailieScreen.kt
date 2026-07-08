@@ -4,55 +4,149 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.taskslayer.domain.model.Dailie
 import com.example.taskslayer.domain.model.Dificulty
+import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.home.components.DailieCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
 @Composable
-fun DailieRoute(soundManager: SoundEffectsManager?){
-    DailieContent(
-        soundManager = soundManager
-    )
-}
+fun DailieRoute(
+    soundManager: SoundEffectsManager?,
+    onNavigateToEdit: (String) -> Unit,
+    viewModel: DailiesViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-@Composable
-fun DailieContent(
-    soundManager: SoundEffectsManager?
-){
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ){
-        LazyColumn() {
-            items(
-                count = 7,
-            ) {
-                DailieCard(
-                    "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                    listOf("Seg", "Qua", "Sex"),
-                    Dificulty.TRIVIAL,
-                    soundManager
-                )
+    // Dispara a escuta em tempo real assim que a tela abre
+    LaunchedEffect(Unit) {
+        viewModel.carregarDailies()
+    }
+
+    when (val state = uiState) {
+        is DailiesUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
+        }
+
+        is DailiesUiState.Error -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = state.message, color = MaterialTheme.colorScheme.error)
+            }
+        }
+
+        is DailiesUiState.Success -> {
+            DailieContent(
+                dailies = state.dailies,
+                soundManager = soundManager,
+                onNavigateToEdit = onNavigateToEdit,
+                onCheckedChange = { dailie, novoStatus ->
+                    viewModel.alternarStatusDailie(dailie, novoStatus)
+                }
+            )
         }
     }
 }
 
 @Composable
+fun DailieContent(
+    dailies: List<Dailie>,
+    soundManager: SoundEffectsManager?,
+    onNavigateToEdit: (String) -> Unit,
+    onCheckedChange: (Dailie, Boolean) -> Unit = { _, _ -> }
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        if (dailies.isEmpty()) {
+            Text(
+                text = "Nenhuma missão diária ativa.\nAproveite o descanso, Guerreiro!",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                items(dailies) { dailie ->
+                    DailieCard(
+                        titulo = dailie.title,
+                        frequencia = dailie.formatarFrequencia(),
+                        dificuldade = dailie.dificuldade,
+                        done = dailie.done,
+                        soundManager = soundManager,
+                        onCardClick = { onNavigateToEdit(dailie.id) },
+                        onCheckedChange = { novoStatus -> onCheckedChange(dailie, novoStatus) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun Dailie.formatarFrequencia(): List<String> {
+    val tipo = when (this.repeticao) {
+        Repetition.DIARIO -> "Diário"
+        Repetition.SEMANAL -> "Semanal"
+        Repetition.MENSAL -> "Mensal"
+        else -> "Diário"
+    }
+    return if (this.aCada > 1) {
+        listOf(tipo, "a cada", "${this.aCada}", "dias")
+    } else {
+        listOf(tipo)
+    }
+}
+
+@Composable
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-fun DailieContentPreview(){
+fun DailieContentPreview() {
     TaskSlayerTheme {
         DailieContent(
-            soundManager = null
+            dailies = listOf(
+                Dailie(
+                    id = "1",
+                    title = "Treinar na Espada",
+                    done = false,
+                    dificuldade = Dificulty.MEDIO,
+                    repeticao = Repetition.DIARIO,
+                    aCada = 1
+                ),
+                Dailie(
+                    id = "2",
+                    title = "Estudar Alquimia",
+                    done = true,
+                    dificuldade = Dificulty.TRIVIAL,
+                    repeticao = Repetition.SEMANAL,
+                    aCada = 2
+                )
+            ),
+            soundManager = null,
+            onNavigateToEdit = {},
+            onCheckedChange = { _, _ -> }
         )
     }
 }

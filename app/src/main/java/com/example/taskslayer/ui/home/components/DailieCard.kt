@@ -19,10 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -38,25 +34,28 @@ import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
-
 @Composable
 fun DailieCard(
-    titulo : String ,
-    frequencia : List<String> ,
-    dificuldade : Dificulty,
+    titulo: String,
+    frequencia: List<String>,
+    dificuldade: Dificulty,
+    done: Boolean,
     soundManager: SoundEffectsManager?,
+    onCardClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit
 ){
-    var done by remember { mutableStateOf(false) }
-
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
         Dificulty.FACIL -> TaskSlayerIcons.easyDificultyIcon
         Dificulty.MEDIO -> TaskSlayerIcons.mediumDificultyIcon
         Dificulty.DIFICIL -> TaskSlayerIcons.hardDificultyIcon
-        else -> { TaskSlayerIcons.trivialDificultyIcon}
+        else -> {
+            TaskSlayerIcons.trivialDificultyIcon
+        }
     }
 
     Card(
+        onClick = onCardClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
@@ -93,10 +92,7 @@ fun DailieCard(
                         style = MaterialTheme.typography.titleMedium.copy(
                             shadow = Shadow(
                                 color = Color.Black.copy(alpha = 0.6f),
-                                offset = Offset(
-                                    x = 3f,
-                                    y = 3f
-                                ),
+                                offset = Offset(x = 3f, y = 3f),
                                 blurRadius = 4f
                             )
                         ),
@@ -121,10 +117,7 @@ fun DailieCard(
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     shadow = Shadow(
                                         color = Color.Black.copy(alpha = 0.6f),
-                                        offset = Offset(
-                                            x = 3f,
-                                            y = 3f
-                                        ),
+                                        offset = Offset(x = 3f, y = 3f),
                                         blurRadius = 4f
                                     )
                                 ),
@@ -134,21 +127,21 @@ fun DailieCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-
                     }
+
                     SlayerChecker(
                         checked = done,
                         onCheckedChange = { atual ->
-                            done = atual
                             if (atual) {
                                 soundManager?.playSlashSound()
                             }
+                            onCheckedChange(atual)
                         }
                     )
                 }
-
             }
-            Box(){
+
+            Box {
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
                     contentDescription = null,
@@ -164,7 +157,6 @@ fun DailieCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-
         }
     }
 }
@@ -172,12 +164,15 @@ fun DailieCard(
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewDailieCard(){
-    TaskSlayerTheme() {
+    TaskSlayerTheme {
         DailieCard(
-            "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            listOf("Seg", "Qua", "Sex"),
-            Dificulty.TRIVIAL,
-            soundManager = null
+            titulo = "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            frequencia = listOf("Seg", "Qua", "Sex"),
+            dificuldade = Dificulty.TRIVIAL,
+            done = false,
+            soundManager = null,
+            onCardClick = {},
+            onCheckedChange = {}
         )
     }
 }

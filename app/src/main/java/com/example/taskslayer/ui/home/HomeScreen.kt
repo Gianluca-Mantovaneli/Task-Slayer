@@ -61,7 +61,7 @@ fun HomeRoute(
     onAbaChange: (AbasHome) -> Unit,
     onSignOutClick: () -> Unit,
     onAddTodoClick: (String?) -> Unit,
-    onAddDailieClick: () -> Unit,
+    onAddDailieClick: (String?) -> Unit,
     onAddHabitClick: (String?) -> Unit
 ){
     var currentTheme by remember { mutableStateOf(AppThemeMode.SYSTEM) }
@@ -88,7 +88,7 @@ fun HomeContent(
     currentTheme: AppThemeMode,
     onThemeChange: (AppThemeMode) -> Unit,
     onSignOutClick: () -> Unit,
-    onAddDailieClick: () -> Unit = {},
+    onAddDailieClick: (String?) -> Unit = {},
     onAddTodoClick: (String?) -> Unit = {},
     onAddHabitClick: (String?) -> Unit = {}
 ){
@@ -285,11 +285,17 @@ fun HomeContent(
                 AbasHome.STATS -> StatsRoute(soundManager)
                 AbasHome.TODO -> TodoRoute(
                     soundManager,
-                    onNavigateToEdit = { taskId ->
-                        onAddTodoClick(taskId)
+                    onNavigateToEdit = { todoId ->
+                        onAddTodoClick(todoId)
                     }
                 )
-                AbasHome.DAILY -> DailieRoute(soundManager)
+
+                AbasHome.DAILY -> DailieRoute(
+                    soundManager,
+                    onNavigateToEdit = { dailieId ->
+                        onAddDailieClick(dailieId)
+                    }
+                )
                 AbasHome.HABITS -> HabitsRoute(
                     soundManager,
                     onHabitClick = { habitId ->
@@ -331,7 +337,7 @@ fun HomeContent(
                     onClick = {
                         when (abaAtual) {
                             AbasHome.TODO -> onAddTodoClick(null)
-                            AbasHome.DAILY -> onAddDailieClick()
+                            AbasHome.DAILY -> onAddDailieClick(null)
                             AbasHome.HABITS -> onAddHabitClick(null)
                             else -> {}
                         }

@@ -64,7 +64,8 @@ class MainActivity : ComponentActivity() {
                             telaAtual =
                                 "addTodoTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         },
-                        onAddDailieClick = {
+                        onAddDailieClick = { idRecebido ->
+                            idTaskParaEditar = idRecebido
                             telaAtual =
                                 "addDailieTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         },
@@ -84,7 +85,9 @@ class MainActivity : ComponentActivity() {
                     )
 
                     "addDailieTask" -> AddDailieTaskRoute(
+                        taskId = idTaskParaEditar,
                         onBackClick = {
+                            idTaskParaEditar = null
                             telaAtual =
                                 "home" // Vai para a home após voltar da tela de adicionar tarefa
                         }

@@ -1,5 +1,6 @@
 package com.example.taskslayer.ui.home.todo
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
 import com.example.taskslayer.domain.model.Todo
@@ -19,7 +20,6 @@ class TodoViewModel : ViewModel() {
     private val taskRepository = TaskRepository()
     private val auth = FirebaseAuth.getInstance()
 
-    // A tela começa exibindo a rodinha de carregamento (Loading)
     private val _uiState = MutableStateFlow<TodoUiState>(TodoUiState.Loading)
     val uiState: StateFlow<TodoUiState> = _uiState.asStateFlow()
 
@@ -48,18 +48,29 @@ class TodoViewModel : ViewModel() {
     fun atualizarStatusTodo(todoId: String, novoStatus: Boolean) {
         val uidLogado = auth.currentUser?.uid ?: return
 
+        val estadoAtual = _uiState.value
+        if (estadoAtual is TodoUiState.Success) {
+            val listaAtualizada = estadoAtual.tasks.map { todo ->
+                if (todo.id == todoId) todo.copy(done = novoStatus) else todo
+            }
+            _uiState.value = TodoUiState.Success(listaAtualizada)
+        }
+
         taskRepository.atualizarStatusTarefa(
             uid = uidLogado,
             taskId = todoId,
             tipoColecao = "todos",
             novoStatus = novoStatus,
             onSucesso = {
-                carregarTarefasTodo()
+                Log.d("TodoViewModel", "Status do Todo atualizado no Firebase com sucesso!")
             },
-            onErro = {
-                _uiState.value = TodoUiState.Error(
-                    it.localizedMessage ?: "Erro ao atualizar o status da tarefa."
+            onErro = { exception ->
+                Log.e(
+                    "TodoViewModel",
+                    "Falha ao atualizar no Firebase. Revertendo UI...",
+                    exception
                 )
+                carregarTarefasTodo()
             }
         )
     }
