@@ -1,6 +1,7 @@
 package com.example.taskslayer.data.repository
 
 import com.example.taskslayer.domain.model.User
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class UserRepository {
@@ -39,5 +40,20 @@ class UserRepository {
             .addOnFailureListener { exception ->
                 onErro(exception)
             }
+    }
+
+    fun modificarEstatisticaUsuario(
+        uid: String,
+        campo: String,
+        quantidade: Long,
+        modificacao: String
+    ) {
+        usersCollection.document(uid)
+        if (modificacao == "increment") {
+            usersCollection.document(uid).update(campo, FieldValue.increment(quantidade))
+        } else if (modificacao == "decrement") {
+            usersCollection.document(uid).update(campo, FieldValue.increment(-quantidade))
+        }
+
     }
 }

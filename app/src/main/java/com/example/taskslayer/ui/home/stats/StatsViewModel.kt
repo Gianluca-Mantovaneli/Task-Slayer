@@ -1,40 +1,46 @@
 package com.example.taskslayer.ui.home.stats
 
 import androidx.lifecycle.ViewModel
+import com.example.taskslayer.data.repository.UserRepository
+import com.example.taskslayer.domain.model.User
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import com.example.taskslayer.domain.model.User
-import com.example.taskslayer.data.repository.UserRepository // 👈 Importe o seu repositório
-import com.google.firebase.auth.FirebaseAuth                 // 👈 Importe o Auth para pegar o UID do logado
+
+sealed interface StatsUiState {
+    object Loading : StatsUiState
+    data class Success(val user: User) : StatsUiState
+    data class Error(val message: String) : StatsUiState
+}
 
 class StatsViewModel : ViewModel() {
 
-    private val auth = FirebaseAuth.getInstance()
     private val userRepository = UserRepository()
-    private val _uiState = MutableStateFlow(User())
-    val uiState: StateFlow<User> = _uiState.asStateFlow()
+    private val auth = FirebaseAuth.getInstance()
 
-    init {
-        carregarDadosDoFirebase()
-    }
+    private val _uiState = MutableStateFlow<StatsUiState>(StatsUiState.Loading)
+    val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
-    private fun carregarDadosDoFirebase() {
+    fun carregarEstatisticas() {
         val uidLogado = auth.currentUser?.uid
-
-        if (uidLogado != null) {
-            userRepository.buscarUsuario(
-                uid = uidLogado,
-                onSucesso = { usuarioReal ->
-                    _uiState.value = usuarioReal
-                },
-                onErro = { exception ->
-                    // TODO: tratar erro melhor
-                    println("TaskSlayer_Erro: Não foi possível carregar os status do Samurai: ${exception.localizedMessage}")
-                }
-            )
-        } else {
-            println("TaskSlayer_Erro: Nenhum usuário autenticado no Firebase Auth!")
+        if (uidLogado == null) {
+            _uiState.value = StatsUiState.Error("Usuário não autenticado.")
+            return
         }
+
+        _uiState.value = StatsUiState.Loading
+
+        userRepository.buscarUsuario(
+            uid = uidLogado,
+            onSucesso = { usuario ->
+                _uiState.value = StatsUiState.Success(user = usuario)
+            },
+            onErro = { excecao ->
+                _uiState.value = StatsUiState.Error(
+                    excecao.localizedMessage ?: "Erro ao carregar os atributos do guerreiro."
+                )
+            }
+        )
     }
 }

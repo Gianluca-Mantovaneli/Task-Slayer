@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dificulty
 import com.example.taskslayer.domain.model.Habit
 import com.example.taskslayer.domain.model.Repetition
@@ -24,6 +25,7 @@ sealed interface AddHabitUiState {
 class AddHabitTaskViewModel : ViewModel() {
 
     private val taskRepository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<AddHabitUiState>(AddHabitUiState.Idle)
     val uiState: StateFlow<AddHabitUiState> = _uiState.asStateFlow()
@@ -56,6 +58,7 @@ class AddHabitTaskViewModel : ViewModel() {
         )
     }
 
+    val ehTarefaNova = idTaskAtual.isBlank()
     fun salvarTarefaHabit(
         titulo: String,
         descricao: String,
@@ -95,6 +98,14 @@ class AddHabitTaskViewModel : ViewModel() {
             habit = novoHabit,
             onSucesso = {
                 _uiState.value = AddHabitUiState.Success
+                if (ehTarefaNova) {
+                    userRepository.modificarEstatisticaUsuario(
+                        uid = uidLogado,
+                        campo = "habitosAtivos",
+                        quantidade = 1,
+                        modificacao = "increment"
+                    )
+                }
             },
             onErro = { exception ->
                 _uiState.value = AddHabitUiState.Error(
@@ -118,6 +129,12 @@ class AddHabitTaskViewModel : ViewModel() {
             taskId = habitId,
             onSucesso = {
                 _uiState.value = AddHabitUiState.Success
+                userRepository.modificarEstatisticaUsuario(
+                    uid = uidLogado,
+                    campo = "habitosAtivos",
+                    quantidade = 1,
+                    modificacao = "decrement"
+                )
             },
             onErro = { exception ->
                 _uiState.value = AddHabitUiState.Error(

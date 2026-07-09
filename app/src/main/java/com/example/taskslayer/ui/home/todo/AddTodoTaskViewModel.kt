@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dificulty
 import com.example.taskslayer.domain.model.Todo
 import com.google.firebase.auth.FirebaseAuth
@@ -24,12 +25,15 @@ sealed interface AddTodoUiState {
 class AddTodoTaskViewModel : ViewModel() {
 
     private val taskRepository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<AddTodoUiState>(AddTodoUiState.Idle)
     val uiState: StateFlow<AddTodoUiState> = _uiState.asStateFlow()
 
     var idTaskAtual: String = ""
     var isEditMode by mutableStateOf(false)
+    private var statusDoneAtual: Boolean = false
+    val ehTarefaNova get() = idTaskAtual.isBlank()
 
     fun prepararParaEdicao(todoId: String) {
         val uidLogado = auth.currentUser?.uid
@@ -46,6 +50,7 @@ class AddTodoTaskViewModel : ViewModel() {
             uid = uidLogado,
             taskId = todoId,
             onSucesso = { todoCarregado ->
+                statusDoneAtual = todoCarregado.done
                 _uiState.value = AddTodoUiState.Loaded(todoCarregado)
             },
             onErro = { exception ->
@@ -62,7 +67,6 @@ class AddTodoTaskViewModel : ViewModel() {
         dificuldade: Dificulty,
         deadline: String = ""
     ) {
-
         // Validações pra avisar o usuario que algo está errado
         if (titulo.isBlank()) {
             _uiState.value = AddTodoUiState.Error("O título não pode estar em branco!")
@@ -83,13 +87,16 @@ class AddTodoTaskViewModel : ViewModel() {
         // Ativando o loading na tela
         _uiState.value = AddTodoUiState.Loading
 
+        // Guardamos o estado antes de iniciar o processo assíncrono
+        val seEhTarefaNova = ehTarefaNova
+
         // Criando o novo Tod0
         val novoTodo = Todo(
             id = idTaskAtual,
             title = titulo,
             description = descricao,
             dificuldade = dificuldade,
-            done = false,
+            done = statusDoneAtual,
             deadline = deadline
         )
 
@@ -100,6 +107,15 @@ class AddTodoTaskViewModel : ViewModel() {
             onSucesso = {
                 _uiState.value = AddTodoUiState.Success
 
+                // Só incrementa as estatísticas se o val dinâmico confirmar que era nova
+                if (seEhTarefaNova) {
+                    userRepository.modificarEstatisticaUsuario(
+                        uid = uidLogado,
+                        campo = "tasksCriadas",
+                        quantidade = 1,
+                        modificacao = "increment"
+                    )
+                }
             },
             onErro = { exception ->
                 _uiState.value = AddTodoUiState.Error(
@@ -123,6 +139,12 @@ class AddTodoTaskViewModel : ViewModel() {
             taskId = taskId,
             onSucesso = {
                 _uiState.value = AddTodoUiState.Success
+                userRepository.modificarEstatisticaUsuario(
+                    uid = uidLogado,
+                    campo = "tasksCriadas",
+                    quantidade = 1,
+                    modificacao = "decrement"
+                )
             },
             onErro = { exception ->
                 _uiState.value = AddTodoUiState.Error(
@@ -132,7 +154,7 @@ class AddTodoTaskViewModel : ViewModel() {
         )
     }
 
-    //  Reseta apenas o fluxo de UI para Idle, sem apagar o modo de edição
+    // Reseta apenas o fluxo de UI para Idle, sem apagar o modo de edição
     fun resetUiStateToIdle() {
         _uiState.value = AddTodoUiState.Idle
     }
@@ -142,5 +164,6 @@ class AddTodoTaskViewModel : ViewModel() {
         _uiState.value = AddTodoUiState.Idle
         idTaskAtual = ""
         isEditMode = false
+        statusDoneAtual = false
     }
 }

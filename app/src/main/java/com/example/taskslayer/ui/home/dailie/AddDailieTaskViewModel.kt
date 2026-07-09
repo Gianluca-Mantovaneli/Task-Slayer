@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dificulty
 import com.example.taskslayer.domain.model.Dailie
 import com.example.taskslayer.domain.model.Repetition
@@ -24,12 +25,17 @@ sealed interface AddDailieUiState {
 class AddDailieTaskViewModel : ViewModel() {
 
     private val taskRepository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<AddDailieUiState>(AddDailieUiState.Idle)
     val uiState: StateFlow<AddDailieUiState> = _uiState.asStateFlow()
 
     var idTaskAtual: String = ""
     var isEditMode by mutableStateOf(false)
+
+    private var statusDoneAtual: Boolean = false
+
+    val ehTarefaNova get() = idTaskAtual.isBlank()
 
     fun prepararParaEdicao(dailieId: String) {
         val uidLogado = auth.currentUser?.uid
@@ -46,6 +52,7 @@ class AddDailieTaskViewModel : ViewModel() {
             uid = uidLogado,
             taskId = dailieId,
             onSucesso = { dailieCarregada ->
+                statusDoneAtual = dailieCarregada.done
                 _uiState.value = AddDailieUiState.Loaded(dailieCarregada)
             },
             onErro = { exception ->
@@ -80,12 +87,14 @@ class AddDailieTaskViewModel : ViewModel() {
         }
 
         _uiState.value = AddDailieUiState.Loading
+
+        val seEhTarefaNova = ehTarefaNova
         val novaDailie = Dailie(
             id = idTaskAtual,
             title = titulo,
             description = descricao,
             dificuldade = dificuldade,
-            done = false,
+            done = statusDoneAtual,
             dataInicio = dataInicio,
             repeticao = repeticao,
             aCada = aCada
@@ -96,6 +105,15 @@ class AddDailieTaskViewModel : ViewModel() {
             dailie = novaDailie,
             onSucesso = {
                 _uiState.value = AddDailieUiState.Success
+
+                if (seEhTarefaNova) {
+                    userRepository.modificarEstatisticaUsuario(
+                        uid = uidLogado,
+                        campo = "tasksCriadas",
+                        quantidade = 1,
+                        modificacao = "increment"
+                    )
+                }
             },
             onErro = { exception ->
                 _uiState.value = AddDailieUiState.Error(
@@ -119,6 +137,12 @@ class AddDailieTaskViewModel : ViewModel() {
             taskId = dailieId,
             onSucesso = {
                 _uiState.value = AddDailieUiState.Success
+                userRepository.modificarEstatisticaUsuario(
+                    uid = uidLogado,
+                    campo = "tasksCriadas",
+                    quantidade = 1,
+                    modificacao = "decrement"
+                )
             },
             onErro = { exception ->
                 _uiState.value = AddDailieUiState.Error(
@@ -136,5 +160,6 @@ class AddDailieTaskViewModel : ViewModel() {
         _uiState.value = AddDailieUiState.Idle
         idTaskAtual = ""
         isEditMode = false
+        statusDoneAtual = false
     }
 }
