@@ -3,6 +3,7 @@ package com.example.taskslayer.ui.auth.register
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -26,10 +27,17 @@ import com.example.taskslayer.R
 import com.example.taskslayer.ui.auth.AuthUiState
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
 
 @Composable
 fun RegisterRoute(
     onRegisterSuccess: () -> Unit,
+    onBackToLogin: () -> Unit,
     viewModel: RegisterViewModel = viewModel()
 ){
     val uiState by viewModel.uiState.collectAsState()
@@ -52,23 +60,26 @@ fun RegisterRoute(
 
     RegisterContent(
         uiState = uiState,
-        onRegisterClick = { nick, email, senha, conf -> viewModel.cadastrarUsuario(nick, email, senha, conf) }
+        onRegisterClick = { nick, email, senha, conf -> viewModel.cadastrarUsuario(nick, email, senha, conf) },
+        onBackToLoginClick = onBackToLogin
     )
 }
 
 @Composable
 fun RegisterContent(
     uiState: AuthUiState = AuthUiState.Idle,
-    onRegisterClick: (String, String, String, String) -> Unit = { _, _, _, _ -> }
+    onRegisterClick: (String, String, String, String) -> Unit = { _, _, _, _ -> },
+    onBackToLoginClick: () -> Unit = {}
 ) {
     var nickname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var confirmarSenha by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)){
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().imePadding().padding(16.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -91,24 +102,40 @@ fun RegisterContent(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_nickname)) },
-                value = nickname, onValueChange = { nickname = it }
+                value = nickname, onValueChange = { nickname = it },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_email)) },
-                value = email, onValueChange = { email = it }
+                value = email, onValueChange = { email = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_senha)) },
                 value = senha, onValueChange = { senha = it },
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_confirmar_senha)) },
                 value = confirmarSenha, onValueChange = { confirmarSenha = it },
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                        onRegisterClick(nickname, email, senha, confirmarSenha) // Já tenta registrar ao dar enter no último
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -125,6 +152,24 @@ fun RegisterContent(
                     Text("FORJAR MINHA CONTA", fontFamily = FonteDoTituloSlayer, fontSize = 18.sp, color = Color.Black)
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Text(
+                    text = "Já possui uma conta? ",
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                )
+                Text(
+                    text = "Voltar ao Login",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                    modifier = Modifier
+                        .clickable { onBackToLoginClick() }
+                )
+            }
+
         }
     }
 }

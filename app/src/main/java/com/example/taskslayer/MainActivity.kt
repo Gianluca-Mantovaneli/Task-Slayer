@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
                     "register" -> RegisterRoute(
                         onRegisterSuccess = {
                             telaAtual = "home" // Vai para a home após criar a conta
+                        },
+                        onBackToLogin = {
+                            telaAtual = "login" // Vai para a tela de login após clicar no botao
                         }
                     )
                     "home" -> HomeRoute(

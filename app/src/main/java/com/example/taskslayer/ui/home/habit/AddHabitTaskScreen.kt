@@ -3,6 +3,8 @@ package com.example.taskslayer.ui.home.habit
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -229,46 +233,114 @@ fun AddHabitTaskContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = { dificuldadeSelecionada = Dificulty.TRIVIAL },
-                    modifier = Modifier.weight(1f)
+                // Trivial
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { dificuldadeSelecionada = Dificulty.TRIVIAL },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    val corTrivial = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.trivialDificultyIcon),
                         contentDescription = "Dificuldade Trivial",
-                        tint = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                        tint = corTrivial,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Trivial",
+                        color = corTrivial,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = if (dificuldadeSelecionada == Dificulty.TRIVIAL) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                IconButton(
-                    onClick = { dificuldadeSelecionada = Dificulty.FACIL },
-                    modifier = Modifier.weight(1f)
+
+                // Fácil
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { dificuldadeSelecionada = Dificulty.FACIL },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    val corFacil = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.easyDificultyIcon),
                         contentDescription = "Dificuldade Fácil",
-                        tint = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                        tint = corFacil,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Fácil",
+                        color = corFacil,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = if (dificuldadeSelecionada == Dificulty.FACIL) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                IconButton(
-                    onClick = { dificuldadeSelecionada = Dificulty.MEDIO },
-                    modifier = Modifier.weight(1f)
+
+                // Médio
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { dificuldadeSelecionada = Dificulty.MEDIO },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    val corMedio = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.mediumDificultyIcon),
                         contentDescription = "Dificuldade Média",
-                        tint = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                        tint = corMedio,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Média",
+                        color = corMedio,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = if (dificuldadeSelecionada == Dificulty.MEDIO) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                IconButton(
-                    onClick = { dificuldadeSelecionada = Dificulty.DIFICIL },
-                    modifier = Modifier.weight(1f)
+
+                // Difícil
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { dificuldadeSelecionada = Dificulty.DIFICIL },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    val corDificil = if (dificuldadeSelecionada == Dificulty.DIFICIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.hardDificultyIcon),
                         contentDescription = "Dificuldade Difícil",
-                        tint = if (dificuldadeSelecionada == Dificulty.DIFICIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+                        tint = corDificil,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        text = "Difícil",
+                        color = corDificil,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = if (dificuldadeSelecionada == Dificulty.DIFICIL) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }

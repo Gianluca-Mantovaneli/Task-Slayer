@@ -1,7 +1,11 @@
 package com.example.taskslayer.ui.home.stats
 
 import android.content.res.Configuration
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +48,13 @@ import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.home.components.SamuraiCharacter
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.runtime.remember
+import com.canhub.cropper.CropImageContract // eu sei que estao deprecated mas foi o que deu :(
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 
 @Composable
 fun StatsRoute(
@@ -50,6 +62,35 @@ fun StatsRoute(
     viewModel: StatsViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val cropImageLauncher = rememberLauncherForActivityResult(
+        contract = CropImageContract()
+    ) { result ->
+        if (result.isSuccessful) {
+            val uriCortada = result.uriContent
+            uriCortada?.let { viewModel.transformarFotoEmBase64(context, it) }
+        }
+    }
+
+    val galeriaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { uriOriginal ->
+            val cropOptions = CropImageContractOptions(
+                uri = uriOriginal,
+                cropImageOptions = CropImageOptions().apply {
+                    cropShape = CropImageView.CropShape.OVAL
+                    fixAspectRatio = true
+                    aspectRatioX = 1
+                    aspectRatioY = 1
+                    allowRotation = true
+                    allowFlipping = false
+                }
+            )
+            cropImageLauncher.launch(cropOptions)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.carregarEstatisticas()
@@ -66,7 +107,11 @@ fun StatsRoute(
         }
 
         is StatsUiState.Success -> {
-            StatsContent(soundManager = soundManager, user = state.user)
+            StatsContent(
+                soundManager = soundManager,
+                user = state.user,
+                onFotoClick = { galeriaLauncher.launch("image/*") }
+            )
         }
 
         is StatsUiState.Error -> {
@@ -87,7 +132,19 @@ fun StatsRoute(
 }
 
 @Composable
-fun StatsContent(soundManager: SoundEffectsManager?, user: User) {
+fun StatsContent(
+    soundManager: SoundEffectsManager?,
+    user: User,
+    onFotoClick: () -> Unit = {}
+) {
+    val bitmapPerfil = remember(user.imagenPerfilURL) {
+        if (user.imagenPerfilURL.isNotBlank()) {
+            decodificarBase64ParaBitmap(user.imagenPerfilURL)
+        } else {
+            null
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,12 +156,13 @@ fun StatsContent(soundManager: SoundEffectsManager?, user: User) {
         Spacer(modifier = Modifier.height(16.dp))
 
         AsyncImage(
-            model = user.imagenPerfilURL,
+            model = bitmapPerfil,
             contentDescription = "Foto de perfil de ${user.nome}",
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)),
+                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                .clickable { onFotoClick() },
             contentScale = ContentScale.Crop
         )
 
@@ -198,6 +256,20 @@ fun ItemLinhaStats(label: String, valor: String) {
             color = MaterialTheme.colorScheme.primary,
             fontFamily = FonteDoTituloSlayer
         )
+    }
+}
+
+fun decodificarBase64ParaBitmap(base64String: String): android.graphics.Bitmap? {
+    return try {
+        val stringLimpa = base64String
+            .replace("data:image/jpeg;base64,", "")
+            .replace("data:image/png;base64,", "")
+            .trim()
+
+        val imageBytes = Base64.decode(stringLimpa, Base64.DEFAULT)
+        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+    } catch (e: Exception) {
+        null
     }
 }
 

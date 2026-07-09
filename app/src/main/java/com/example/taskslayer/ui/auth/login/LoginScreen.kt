@@ -29,6 +29,12 @@ import com.example.taskslayer.ui.auth.AuthUiState
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
 
 @Composable
 fun LoginRoute(
@@ -81,7 +87,9 @@ fun LoginContent(
 
     val context = LocalContext.current
 
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)){
+    val focusManager = LocalFocusManager.current
+
+    Box(modifier = Modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)){
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -133,14 +141,32 @@ fun LoginContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = email,
                 onValueChange = { email = it },
-                label = { Text(stringResource(R.string.label_email)) }
+                label = { Text(stringResource(R.string.label_email)) },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next // Transforma o botão Enter em "Avançar"
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) } // Pula para o campo de baixo
+                )
             )
+
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 value = senha,
                 onValueChange = { senha = it },
                 label = { Text(stringResource(R.string.label_senha)) },
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done // No último campo, mostra o botão de "Concluir"
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus() // Esconde o teclado/foco ao terminar
+                        onLoginClick(email, senha) // Dispara o clique de login ao passar da senha
+                    }
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
