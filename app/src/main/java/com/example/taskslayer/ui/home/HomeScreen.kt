@@ -1,4 +1,4 @@
-package com.example.taskslayer.home
+package com.example.taskslayer.ui.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -42,11 +42,16 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.taskslayer.R
 import com.example.taskslayer.tools.SoundEffectsManager
+import com.example.taskslayer.ui.home.dailie.DailieRoute
+import com.example.taskslayer.ui.home.habit.HabitsRoute
+import com.example.taskslayer.ui.home.stats.StatsRoute
+import com.example.taskslayer.ui.home.todo.TodoRoute
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import kotlin.math.roundToInt
 import com.example.taskslayer.ui.theme.AppThemeMode
+import com.google.firebase.auth.FirebaseAuth
 
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
@@ -55,11 +60,11 @@ fun HomeRoute(
     abaAtual: AbasHome,
     onAbaChange: (AbasHome) -> Unit,
     onSignOutClick: () -> Unit,
-    onAddTodoClick: () -> Unit,
-    onAddDailieClick: () -> Unit,
-    onAddHabitClick: () -> Unit
+    onAddTodoClick: (String?) -> Unit,
+    onAddDailieClick: (String?) -> Unit,
+    onAddHabitClick: (String?) -> Unit
 ){
-    var currentTheme by remember { mutableStateOf<AppThemeMode>(AppThemeMode.SYSTEM) }
+    var currentTheme by remember { mutableStateOf(AppThemeMode.SYSTEM) }
 
     TaskSlayerTheme(themeMode = currentTheme) {
         HomeContent(
@@ -83,9 +88,9 @@ fun HomeContent(
     currentTheme: AppThemeMode,
     onThemeChange: (AppThemeMode) -> Unit,
     onSignOutClick: () -> Unit,
-    onAddDailieClick: () -> Unit = {},
-    onAddTodoClick: () -> Unit = {},
-    onAddHabitClick: () -> Unit = {}
+    onAddDailieClick: (String?) -> Unit = {},
+    onAddTodoClick: (String?) -> Unit = {},
+    onAddHabitClick: (String?) -> Unit = {}
 ){
     val snackbarHostState = remember { SnackbarHostState() }
     var expandido: Boolean by remember { mutableStateOf(false) }
@@ -141,7 +146,7 @@ fun HomeContent(
                                 },
                                 onClick = {
                                     expandido = false
-                                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                    FirebaseAuth.getInstance().signOut()
                                     onSignOutClick()
                                 }
                             )
@@ -278,9 +283,25 @@ fun HomeContent(
             when (abaAtual) {
                 // Roteamento das abas
                 AbasHome.STATS -> StatsRoute(soundManager)
-                AbasHome.TODO -> TodoRoute(soundManager)
-                AbasHome.DAILY -> DailieRoute(soundManager)
-                AbasHome.HABITS -> HabitsRoute(soundManager)
+                AbasHome.TODO -> TodoRoute(
+                    soundManager,
+                    onNavigateToEdit = { todoId ->
+                        onAddTodoClick(todoId)
+                    }
+                )
+
+                AbasHome.DAILY -> DailieRoute(
+                    soundManager,
+                    onNavigateToEdit = { dailieId ->
+                        onAddDailieClick(dailieId)
+                    }
+                )
+                AbasHome.HABITS -> HabitsRoute(
+                    soundManager,
+                    onHabitClick = { habitId ->
+                        onAddHabitClick(habitId)
+                    }
+                )
             }
 
             if(abaAtual != AbasHome.STATS) {
@@ -315,9 +336,9 @@ fun HomeContent(
                         },
                     onClick = {
                         when (abaAtual) {
-                            AbasHome.TODO -> onAddTodoClick()
-                            AbasHome.DAILY -> onAddDailieClick()
-                            AbasHome.HABITS -> onAddHabitClick()
+                            AbasHome.TODO -> onAddTodoClick(null)
+                            AbasHome.DAILY -> onAddDailieClick(null)
+                            AbasHome.HABITS -> onAddHabitClick(null)
                             else -> {}
                         }
                     },

@@ -1,22 +1,18 @@
-package com.example.taskslayer.home.components
+package com.example.taskslayer.ui.home.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -42,7 +38,9 @@ fun HabitCard(
     titulo : String,
     habitEffect: Boolean,
     dificuldade : Dificulty,
-    sounManager: SoundEffectsManager?
+    soundManager: SoundEffectsManager?,
+    onHabitClick: () -> Unit = {},
+    onActionClick: () -> Unit = {}
 ){
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
@@ -57,6 +55,7 @@ fun HabitCard(
     }
 
     Card(
+        onClick = onHabitClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
@@ -78,8 +77,9 @@ fun HabitCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Box(
-                modifier = Modifier.clickable{
-                    sounManager?.playSlashSound()
+                modifier = Modifier.clickable {
+                    soundManager?.playSlashSound()
+                    onActionClick()
                 }
             ){
                 Icon(
@@ -87,7 +87,7 @@ fun HabitCard(
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
-                        .offset(x= 2.dp, y = 2.dp),
+                        .offset(x = 2.dp, y = 2.dp),
                     tint = Color.Black.copy(alpha = 0.7f)
                 )
                 Icon(
@@ -98,7 +98,9 @@ fun HabitCard(
                 )
             }
             Text(
-                modifier = Modifier.padding(horizontal = 10.dp).weight(1f),
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .weight(1f),
                 text = titulo,
                 style = MaterialTheme.typography.titleMedium.copy(
                     shadow = Shadow(
@@ -118,7 +120,9 @@ fun HabitCard(
                 Icon(
                     painter = painterResource(id = iconeDificuldade),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp).offset(x= 2.dp, y = 2.dp),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .offset(x = 2.dp, y = 2.dp),
                     tint = Color.Black.copy(alpha = 0.7f)
                 )
                 Icon(
@@ -140,7 +144,7 @@ fun PreviewHabitCard(){
             "Título grande pra testar essa porra haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             true,
             Dificulty.TRIVIAL,
-            sounManager = null
+            soundManager = null
         )
     }
 }

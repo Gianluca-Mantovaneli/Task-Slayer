@@ -4,19 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.taskslayer.home.AbasHome
-import com.example.taskslayer.home.AddDailieTaskRoute
-import com.example.taskslayer.home.AddHabitTaskRoute
-import com.example.taskslayer.home.HomeRoute
+import com.example.taskslayer.ui.home.AbasHome
+import com.example.taskslayer.ui.home.dailie.AddDailieTaskRoute
+import com.example.taskslayer.ui.home.habit.AddHabitTaskRoute
+import com.example.taskslayer.ui.home.HomeRoute
 import com.example.taskslayer.ui.auth.login.LoginRoute
 import com.example.taskslayer.ui.auth.register.RegisterRoute
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
-import com.example.taskslayer.home.AddTodoTaskRoute
+import com.example.taskslayer.ui.home.todo.AddTodoTaskRoute
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
@@ -33,6 +32,8 @@ class MainActivity : ComponentActivity() {
                 }
 
                 var abaHomeAtual by remember { mutableStateOf(AbasHome.STATS) }
+
+                var idTaskParaEditar by remember { mutableStateOf<String?>(null) }
 
                 // Sistema de roteamento baseado em string
                 when (telaAtual) {
@@ -58,38 +59,45 @@ class MainActivity : ComponentActivity() {
                         onSignOutClick = {
                             telaAtual = "login" // Vai para o login após deslogar
                         },
-                        onAddTodoClick = {
+                        onAddTodoClick = { idRecebido ->
+                            idTaskParaEditar = idRecebido
                             telaAtual =
                                 "addTodoTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         },
-                        onAddDailieClick = {
+                        onAddDailieClick = { idRecebido ->
+                            idTaskParaEditar = idRecebido
                             telaAtual =
                                 "addDailieTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         },
-                        onAddHabitClick = {
+                        onAddHabitClick = { idRecebido ->
+                            idTaskParaEditar = idRecebido
                             telaAtual =
                                 "addHabitsTask" // Vai para a tela de adicionar tarefa após clicar no botão
                         }
                     )
 
                     "addTodoTask" -> AddTodoTaskRoute(
+                        taskId = idTaskParaEditar,
                         onBackClick = {
-                            telaAtual =
-                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                            idTaskParaEditar = null
+                            telaAtual = "home"
                         }
                     )
 
                     "addDailieTask" -> AddDailieTaskRoute(
+                        taskId = idTaskParaEditar,
                         onBackClick = {
+                            idTaskParaEditar = null
                             telaAtual =
                                 "home" // Vai para a home após voltar da tela de adicionar tarefa
                         }
                     )
 
                     "addHabitsTask" -> AddHabitTaskRoute(
+                        habitId = idTaskParaEditar,
                         onBackClick = {
-                            telaAtual =
-                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                            idTaskParaEditar = null
+                            telaAtual = "home"
                         }
                     )
                 }

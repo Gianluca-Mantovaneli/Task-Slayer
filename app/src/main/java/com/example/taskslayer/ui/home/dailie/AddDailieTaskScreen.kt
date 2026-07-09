@@ -1,7 +1,7 @@
-package com.example.taskslayer.home
-
+package com.example.taskslayer.ui.home.dailie
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,26 +28,33 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskslayer.domain.model.Dificulty
 import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
@@ -56,49 +63,118 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-
 @Composable
-fun AddTodoTaskRoute(
-    onBackClick: () -> Unit
+fun AddDailieTaskRoute(
+    taskId: String? = null,
+    onBackClick: () -> Unit,
+    viewModel: AddDailieTaskViewModel = viewModel()
 ) {
-    BackHandler {
-        onBackClick() // Captura quando o usuario clicar no botao de voltar
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val ctx = LocalContext.current
+    var mensagemSucesso by remember { mutableStateOf("") }
+
+    // Dispara a busca se houver um ID válido de Diária
+    LaunchedEffect(taskId) {
+        if (!taskId.isNullOrBlank()) {
+            viewModel.prepararParaEdicao(taskId)
+        }
     }
-    AddTodoTaskContent(
-        isEditMode = false,
-        onBackClick = onBackClick,
-        onSaveTask = { titulo, descricao, dificuldade, deadline -> onBackClick() }, // voltando pra home TODO: mudar isso para a viewmodel
-        onDeleteTask = { onBackClick() }
+
+    // Captura o clique físico ou por gesto de voltar no Android
+    BackHandler {
+        viewModel.resetCompletamente()
+        onBackClick()
+    }
+
+    // Monitora o estado emitido pela ViewModel
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is AddDailieUiState.Success -> {
+                Toast.makeText(ctx, mensagemSucesso, Toast.LENGTH_SHORT).show()
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
+
+            is AddDailieUiState.Error -> {
+                Toast.makeText(ctx, state.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetUiStateToIdle()
+            }
+
+            else -> {}
+        }
+    }
+
+    AddDailieTaskContent(
+        viewModel = viewModel,
+        isEditMode = viewModel.isEditMode,
+        onBackClick = {
+            viewModel.resetCompletamente()
+            onBackClick()
+        },
+        onSaveTask = { titulo, descricao, dificuldade, dataInicio, repeticao, frequencia, _ ->
+            mensagemSucesso = "Diária salva com sucesso!"
+            viewModel.salvarTarefaDailie(
+                titulo,
+                descricao,
+                dificuldade,
+                dataInicio,
+                repeticao,
+                frequencia
+            )
+        },
+        onDeleteTask = {
+            if (taskId != null) {
+                mensagemSucesso = "Diária deletada com sucesso!"
+                viewModel.deletarTarefaDailie(taskId)
+            } else {
+                viewModel.resetCompletamente()
+                onBackClick()
+            }
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTodoTaskContent(
-    isEditMode: Boolean = true,
-    onBackClick: () -> Unit = {},
-    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String) -> Unit = {_,_,_,_ ->},
+fun AddDailieTaskContent(
+    viewModel: AddDailieTaskViewModel = viewModel(),
+    isEditMode: Boolean = false,
+    onBackClick: () -> Unit,
+    onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String, repeticao: Repetition, frequencia: Int, lembretes: List<String>) -> Unit = {_,_,_,_,_,_,_ ->},
     onDeleteTask: () -> Unit = {}
 ){
     var titulo by rememberSaveable { mutableStateOf("") }
     var descricao by rememberSaveable { mutableStateOf("") }
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
-    var deadline by rememberSaveable { mutableStateOf("") }
-
+    var dataInicio by rememberSaveable { mutableStateOf("") }
+    var repeticao by rememberSaveable { mutableStateOf(Repetition.NONE) }
+    var frequencia by rememberSaveable { mutableIntStateOf(1) }
+    var lembretes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+    var menuExpandido by remember { mutableStateOf(false) }
 
-    // Para validar se o formulário está completo o sufuciente para o usuario salvar a tarefa
-    val isFormValid =
-        titulo.isNotBlank() &&
-        dificuldadeSelecionada != Dificulty.NONE &&
-        deadline.isNotBlank()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState) {
+        if (uiState is AddDailieUiState.Loaded) {
+            val dailie = (uiState as AddDailieUiState.Loaded).dailie
+            titulo = dailie.title
+            descricao = dailie.description
+            dificuldadeSelecionada = dailie.dificuldade
+            dataInicio = dailie.dataInicio
+            repeticao = dailie.repeticao
+            frequencia = dailie.aCada
+
+            viewModel.resetUiStateToIdle()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Adicionar Task Todo")},
+                title = { Text(text = if (isEditMode) "Editar Task Diária" else "Adicionar Task Diária") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -112,7 +188,7 @@ fun AddTodoTaskContent(
                     }
                 },
                 actions = {
-                    if(isEditMode){
+                    if (isEditMode) {
                         IconButton(onClick = onDeleteTask) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -121,15 +197,18 @@ fun AddTodoTaskContent(
                             )
                         }
                     }
-                    IconButton(onClick = {
-                        onSaveTask(
-                            titulo,
-                            descricao,
-                            dificuldadeSelecionada,
-                            deadline,
-                        )
-                    },
-                        enabled = isFormValid
+                    IconButton(
+                        onClick = {
+                            onSaveTask(
+                                titulo,
+                                descricao,
+                                dificuldadeSelecionada,
+                                dataInicio,
+                                repeticao,
+                                frequencia,
+                                lembretes
+                            )
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
@@ -139,18 +218,17 @@ fun AddTodoTaskContent(
                     }
                 }
             )
-
         }
-    ) {paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-        ){
-            // titulo
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Título
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -159,7 +237,7 @@ fun AddTodoTaskContent(
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
             )
-            // descricao
+            // Descrição
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,13 +247,13 @@ fun AddTodoTaskContent(
                 onValueChange = { descricao = it },
                 label = { Text("Descrição") },
             )
-            // dificuldade
+            // Dificuldade
             Text(
                 text = "Dificuldade",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 10.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
             Row(
                 modifier = Modifier
@@ -183,11 +261,9 @@ fun AddTodoTaskContent(
                     .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Botao dificuldade Trivial
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.TRIVIAL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.trivialDificultyIcon),
@@ -195,11 +271,9 @@ fun AddTodoTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Fácil
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.FACIL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.easyDificultyIcon),
@@ -207,7 +281,6 @@ fun AddTodoTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Médio
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.MEDIO },
                     modifier = Modifier.weight(1f)
@@ -218,11 +291,9 @@ fun AddTodoTaskContent(
                         tint = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                // Botao dificuldade Difícil
                 IconButton(
                     onClick = { dificuldadeSelecionada = Dificulty.DIFICIL },
                     modifier = Modifier.weight(1f)
-
                 ) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.hardDificultyIcon),
@@ -231,13 +302,14 @@ fun AddTodoTaskContent(
                     )
                 }
             }
-            // deadline
+
+            // Data início
             Text(
-                text = "Prazo final (Deadline)",
+                text = "Data Inicial (Start)",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 10.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
             Box(
                 modifier = Modifier
@@ -245,9 +317,9 @@ fun AddTodoTaskContent(
                     .padding(horizontal = 10.dp)
             ) {
                 OutlinedTextField(
-                    value = deadline,
+                    value = dataInicio,
                     onValueChange = {},
-                    label = { Text("Selecione uma data...") },
+                    label = { Text("Selecione Uma Data...") },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     enabled = false,
@@ -263,8 +335,78 @@ fun AddTodoTaskContent(
                         .clickable { showDatePicker = true }
                 )
             }
+
+            // Frequência / Repetição
+            Text(
+                text = "Frequência",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 10.dp),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ExposedDropdownMenuBox(
+                    expanded = menuExpandido,
+                    onExpandedChange = { menuExpandido = !menuExpandido },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp)
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        readOnly = true,
+                        value = repeticao.name,
+                        onValueChange = {},
+                        label = { Text("Repetição") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpandido) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = menuExpandido,
+                        onDismissRequest = { menuExpandido = false }
+                    ) {
+                        Repetition.entries.filter { it != Repetition.NONE }.forEach { opcao ->
+                            DropdownMenuItem(
+                                text = { Text(text = opcao.name, style = MaterialTheme.typography.bodyLarge) },
+                                onClick = {
+                                    repeticao = opcao
+                                    menuExpandido = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 10.dp),
+                    value = if (frequencia == 0) "" else frequencia.toString(),
+                    onValueChange = { novoTexto ->
+                        if (novoTexto.all { it.isDigit() }) {
+                            frequencia = novoTexto.toIntOrNull() ?: 0
+                        }
+                    },
+                    label = { Text("A cada") },
+                    placeholder = { Text("Ex: 1, 2, 3, etc...") },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    )
+                )
+            }
         }
     }
+
+    // Seletor de Data (DatePicker)
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -272,13 +414,12 @@ fun AddTodoTaskContent(
                 TextButton(onClick = {
                     val selectedDateMillis = datePickerState.selectedDateMillis
                     if (selectedDateMillis != null) {
-
                         val date = Instant.ofEpochMilli(selectedDateMillis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
 
                         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                        deadline = date.format(formatter)
+                        dataInicio = date.format(formatter)
                     }
                     showDatePicker = false
                 }) {
@@ -298,8 +439,11 @@ fun AddTodoTaskContent(
 
 @Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun AddTodoTaskContentPreview(){
+fun AddDailieTaskContentPreview(){
     TaskSlayerTheme {
-        AddTodoTaskContent()
+        AddDailieTaskContent(
+            onBackClick = {},
+            onSaveTask = { titulo, descricao, dificuldade, deadline, repeticao, frequencia, lembretes -> }
+        )
     }
 }

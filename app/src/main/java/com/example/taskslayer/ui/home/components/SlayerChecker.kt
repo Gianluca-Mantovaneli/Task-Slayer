@@ -1,4 +1,4 @@
-package com.example.taskslayer.home.components
+package com.example.taskslayer.ui.home.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -37,7 +37,9 @@ fun SlayerChecker(
             .background(if (checked) primaryColor else Color.Transparent)
             .border(
                 width = 2.dp,
-                color = if (checked) primaryColor else MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f),
+                color = if (checked) primaryColor else MaterialTheme.colorScheme.onSecondary.copy(
+                    alpha = 0.5f
+                ),
                 shape = shape
             )
             .clickable { onCheckedChange(!checked) }

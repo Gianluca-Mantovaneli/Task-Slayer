@@ -33,17 +33,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // No AGP 9.0+, o Kotlin é embutido e configurado aqui.
-    // Isso evita o erro "Cannot add extension with name 'kotlin'"
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-            freeCompilerArgs.add("-Xjvm-default=all")
-        }
-    }
-
     buildFeatures {
         compose = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        freeCompilerArgs.add("-Xjvm-default=all")
     }
 }
 
