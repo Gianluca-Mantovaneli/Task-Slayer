@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.taskslayer.domain.model.User
 import com.example.taskslayer.tools.SoundEffectsManager
+import com.example.taskslayer.ui.home.components.SamuraiCharacter
 import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
@@ -89,6 +92,7 @@ fun StatsContent(soundManager: SoundEffectsManager?, user: User) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -130,7 +134,10 @@ fun StatsContent(soundManager: SoundEffectsManager?, user: User) {
             strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        SamuraiCharacter(
+            currentScore = user.statusAtual,
+            modifier = Modifier.size(220.dp)
+        )
 
         Text(
             text = "ESTATÍSTICAS DE BATALHA",
