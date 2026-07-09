@@ -3,6 +3,7 @@ package com.example.taskslayer.ui.home.dailie
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dailie
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ sealed interface DailiesUiState {
 class DailiesViewModel : ViewModel() {
 
     private val taskRepository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow<DailiesUiState>(DailiesUiState.Loading)
@@ -62,6 +64,11 @@ class DailiesViewModel : ViewModel() {
             tipoColecao = "dailies",
             novoStatus = novoStatus,
             onSucesso = {
+                userRepository.computarProgressoTarefa(
+                    uid = uidLogado,
+                    isConcluido = novoStatus,
+                    dificuldade = dailie.dificuldade
+                )
                 Log.d("DailiesViewModel", "Status atualizado no Firebase com sucesso!")
             },
             onErro = { excecao ->

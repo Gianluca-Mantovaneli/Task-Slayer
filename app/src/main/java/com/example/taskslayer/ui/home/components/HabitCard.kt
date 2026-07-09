@@ -39,7 +39,8 @@ fun HabitCard(
     habitEffect: Boolean,
     dificuldade : Dificulty,
     soundManager: SoundEffectsManager?,
-    onHabitClick: () -> Unit = {}
+    onHabitClick: () -> Unit = {},
+    onActionClick: () -> Unit = {}
 ){
     val iconeDificuldade = when (dificuldade) {
         Dificulty.TRIVIAL -> TaskSlayerIcons.trivialDificultyIcon
@@ -76,8 +77,9 @@ fun HabitCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Box(
-                modifier = Modifier.clickable{
+                modifier = Modifier.clickable {
                     soundManager?.playSlashSound()
+                    onActionClick()
                 }
             ){
                 Icon(

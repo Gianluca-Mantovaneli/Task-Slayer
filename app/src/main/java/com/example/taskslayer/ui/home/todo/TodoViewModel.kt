@@ -3,6 +3,7 @@ package com.example.taskslayer.ui.home.todo
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Todo
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ sealed interface TodoUiState {
 class TodoViewModel : ViewModel() {
 
     private val taskRepository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow<TodoUiState>(TodoUiState.Loading)
@@ -45,7 +47,7 @@ class TodoViewModel : ViewModel() {
         )
     }
 
-    fun atualizarStatusTodo(todoId: String, novoStatus: Boolean) {
+    fun atualizarStatusTodo(todo: Todo, todoId: String, novoStatus: Boolean) {
         val uidLogado = auth.currentUser?.uid ?: return
 
         val estadoAtual = _uiState.value
@@ -58,10 +60,15 @@ class TodoViewModel : ViewModel() {
 
         taskRepository.atualizarStatusTarefa(
             uid = uidLogado,
-            taskId = todoId,
+            taskId = todo.id,
             tipoColecao = "todos",
             novoStatus = novoStatus,
             onSucesso = {
+                userRepository.computarProgressoTarefa(
+                    uid = uidLogado,
+                    isConcluido = novoStatus,
+                    dificuldade = todo.dificuldade
+                )
                 Log.d("TodoViewModel", "Status do Todo atualizado no Firebase com sucesso!")
             },
             onErro = { exception ->

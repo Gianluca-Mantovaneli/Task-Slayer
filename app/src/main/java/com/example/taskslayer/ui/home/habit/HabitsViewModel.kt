@@ -2,6 +2,7 @@ package com.example.taskslayer.ui.home.habit
 
 import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
+import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Habit
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ sealed interface HabitsUiState {
 class HabitsViewModel : ViewModel() {
 
     private val repository = TaskRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow<HabitsUiState>(HabitsUiState.Loading)
@@ -41,6 +43,16 @@ class HabitsViewModel : ViewModel() {
                     exception.localizedMessage ?: "Erro ao carregar seus hábitos."
                 )
             }
+        )
+    }
+
+    fun registrarCliqueHabito(habit: Habit) {
+        val uidLogado = auth.currentUser?.uid ?: return
+
+        userRepository.computarProgressoHabito(
+            uid = uidLogado,
+            isPositivo = habit.impact,
+            dificuldade = habit.dificuldade
         )
     }
 }

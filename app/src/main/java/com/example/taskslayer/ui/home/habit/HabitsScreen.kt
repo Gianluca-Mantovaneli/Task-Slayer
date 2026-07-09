@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,7 +38,6 @@ fun HabitsRoute(
         viewModel.carregarHabitos()
     }
 
-    // Trata os estados visuais da tela de forma reativa
     when (val state = uiState) {
         is HabitsUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -55,7 +55,10 @@ fun HabitsRoute(
             HabitsContent(
                 habits = state.habits,
                 soundManager = soundManager,
-                onHabitClick = onHabitClick
+                onHabitClick = onHabitClick,
+                onActionClick = { habit ->
+                    viewModel.registrarCliqueHabito(habit)
+                }
             )
         }
     }
@@ -65,7 +68,8 @@ fun HabitsRoute(
 fun HabitsContent(
     habits: List<Habit>,
     soundManager: SoundEffectsManager?,
-    onHabitClick: (String) -> Unit = {}
+    onHabitClick: (String) -> Unit = {},
+    onActionClick: (Habit) -> Unit = {}
 ){
     Box(
         modifier = Modifier
@@ -83,14 +87,14 @@ fun HabitsContent(
             )
         } else {
             LazyColumn {
-
                 items(habits) { habit ->
                     HabitCard(
                         titulo = habit.title,
                         habitEffect = habit.impact,
                         dificuldade = habit.dificuldade,
                         soundManager = soundManager,
-                        onHabitClick = { onHabitClick(habit.id) }
+                        onHabitClick = { onHabitClick(habit.id) },
+                        onActionClick = { onActionClick(habit) }
                     )
                 }
             }
@@ -117,8 +121,9 @@ fun HabitsContentPreview(){
                     dificuldade = Dificulty.TRIVIAL
                 )
             ),
+            soundManager = null,
             onHabitClick = { _ -> },
-            soundManager = null
+            onActionClick = { _ -> }
         )
     }
 }

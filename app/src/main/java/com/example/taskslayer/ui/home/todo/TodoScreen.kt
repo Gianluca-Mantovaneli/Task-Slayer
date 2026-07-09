@@ -48,7 +48,7 @@ fun TodoRoute(
                 soundManager = soundManager,
                 onNavigateToEdit = onNavigateToEdit,
                 onTaskCheckedChange = { todo, novoStatus ->
-                    viewModel.atualizarStatusTodo(todo.id, novoStatus)
+                    viewModel.atualizarStatusTodo(todo, todo.id, novoStatus)
                 }
             )
         }
