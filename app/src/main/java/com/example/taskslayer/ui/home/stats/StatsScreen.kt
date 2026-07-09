@@ -50,6 +50,7 @@ import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.remember
 import com.canhub.cropper.CropImageContract // eu sei que estao deprecated mas foi o que deu :(
 import com.canhub.cropper.CropImageContractOptions
@@ -175,6 +176,22 @@ fun StatsContent(
             color = MaterialTheme.colorScheme.primary
         )
 
+        SamuraiCharacter(
+            currentScore = user.statusAtual,
+            modifier = Modifier.size(220.dp).offset(y = (-40).dp),
+        )
+
+        LinearProgressIndicator(
+            progress = { user.statusAtual.toFloat() / 100 },
+            modifier = Modifier
+                .fillMaxWidth(),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
+            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = "Reputação ${user.statusAtual}",
             fontSize = 16.sp,
@@ -182,20 +199,7 @@ fun StatsContent(
             color = MaterialTheme.colorScheme.secondary
         )
 
-        LinearProgressIndicator(
-            progress = { user.statusAtual.toFloat() / 100 },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
-            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-        )
-
-        SamuraiCharacter(
-            currentScore = user.statusAtual,
-            modifier = Modifier.size(220.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "ESTATÍSTICAS DE BATALHA",
