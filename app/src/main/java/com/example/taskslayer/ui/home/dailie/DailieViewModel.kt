@@ -10,12 +10,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Estados da interface de usuário para a lista de missões diárias (Dailies).
+ */
 sealed interface DailiesUiState {
     object Loading : DailiesUiState
     data class Success(val dailies: List<Dailie>) : DailiesUiState
     data class Error(val message: String) : DailiesUiState
 }
 
+/**
+ * ViewModel que gerencia a aba de Dailies.
+ * Lida com a listagem e alternância de status das missões recorrentes.
+ */
 class DailiesViewModel(
     private val taskRepository: TaskRepository = TaskRepository(),
     private val userRepository: UserRepository = UserRepository(),
@@ -25,6 +32,9 @@ class DailiesViewModel(
     private val _uiState = MutableStateFlow<DailiesUiState>(DailiesUiState.Loading)
     val uiState: StateFlow<DailiesUiState> = _uiState.asStateFlow()
 
+    /**
+     * Carrega as missões diárias do usuário logado.
+     */
     fun carregarDailies() {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -47,13 +57,18 @@ class DailiesViewModel(
         )
     }
 
+    /**
+     * Alterna o status de conclusão de uma missão diária.
+     * Atualiza a UI de forma otimista e sincroniza com o Firestore.
+     */
     fun alternarStatusDailie(dailie: Dailie, novoStatus: Boolean) {
         val uidLogado = auth.currentUser?.uid ?: return
 
+        // Atualização Otimista local
         val estadoAtual = _uiState.value
         if (estadoAtual is DailiesUiState.Success) {
-            val listaAtualizada = estadoAtual.dailies.map {
-                if (it.id == dailie.id) it.copy(done = novoStatus) else it
+            val listaAtualizada = estadoAtual.dailies.map { item ->
+                if (item.id == dailie.id) item.copy(done = novoStatus) else item
             }
             _uiState.value = DailiesUiState.Success(listaAtualizada)
         }
@@ -64,6 +79,7 @@ class DailiesViewModel(
             tipoColecao = "dailies",
             novoStatus = novoStatus,
             onSucesso = {
+                // Ao concluir ou desmarcar, atualiza a experiência/status do usuário
                 userRepository.computarProgressoTarefa(
                     uid = uidLogado,
                     isConcluido = novoStatus,
@@ -77,6 +93,7 @@ class DailiesViewModel(
                     "Falha ao atualizar no Firebase. Revertendo UI...",
                     excecao
                 )
+                // Em caso de erro de rede, recarrega os dados reais para manter consistência
                 carregarDailies()
             }
         )

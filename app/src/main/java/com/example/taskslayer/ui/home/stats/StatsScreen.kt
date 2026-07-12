@@ -6,30 +6,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,13 +33,15 @@ import com.example.taskslayer.ui.theme.FonteDoTituloSlayer
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import android.graphics.BitmapFactory
 import android.util.Base64
-import androidx.compose.foundation.layout.offset
-import androidx.compose.runtime.remember
-import com.canhub.cropper.CropImageContract // eu sei que estao deprecated mas foi o que deu :(
+import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 
+/**
+ * Função de rota para a aba de Estatísticas do Guerreiro.
+ * Gerencia a lógica de seleção e corte de imagem de perfil, além de exibir os dados do usuário.
+ */
 @Composable
 fun StatsRoute(
     soundManager: SoundEffectsManager?,
@@ -65,6 +50,7 @@ fun StatsRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    // Launcher para o processo de corte de imagem
     val cropImageLauncher = rememberLauncherForActivityResult(
         contract = CropImageContract()
     ) { result ->
@@ -74,6 +60,7 @@ fun StatsRoute(
         }
     }
 
+    // Launcher para selecionar imagem da galeria
     val galeriaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -93,16 +80,14 @@ fun StatsRoute(
         }
     }
 
+    // Carrega estatísticas ao iniciar
     LaunchedEffect(Unit) {
         viewModel.carregarEstatisticas()
     }
 
     when (val state = uiState) {
         is StatsUiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
@@ -116,10 +101,7 @@ fun StatsRoute(
         }
 
         is StatsUiState.Error -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = state.message,
                     color = MaterialTheme.colorScheme.error,
@@ -132,12 +114,17 @@ fun StatsRoute(
     }
 }
 
+/**
+ * Conteúdo visual das estatísticas do usuário.
+ * Exibe foto de perfil, animação do samurai, barra de progresso e contadores.
+ */
 @Composable
 fun StatsContent(
     soundManager: SoundEffectsManager?,
     user: User,
     onFotoClick: () -> Unit = {}
 ) {
+    // Decodifica a string Base64 da imagem de perfil para um Bitmap exibível
     val bitmapPerfil = remember(user.imagenPerfilURL) {
         if (user.imagenPerfilURL.isNotBlank()) {
             decodificarBase64ParaBitmap(user.imagenPerfilURL)
@@ -156,6 +143,7 @@ fun StatsContent(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Avatar do Usuário (clicável para trocar)
         AsyncImage(
             model = bitmapPerfil,
             contentDescription = "Foto de perfil de ${user.nome}",
@@ -169,6 +157,7 @@ fun StatsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Nome do Guerreiro
         Text(
             text = user.nome,
             fontFamily = FonteDoTituloSlayer,
@@ -176,15 +165,16 @@ fun StatsContent(
             color = MaterialTheme.colorScheme.primary
         )
 
+        // Ilustração do Personagem Samurai (reage ao status/pontuação)
         SamuraiCharacter(
             currentScore = user.statusAtual,
             modifier = Modifier.size(220.dp).offset(y = (-40).dp),
         )
 
+        // Barra de progresso (Reputação)
         LinearProgressIndicator(
             progress = { user.statusAtual.toFloat() / 100 },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
             strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
@@ -201,14 +191,13 @@ fun StatsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Seção de contadores detalhados
         Text(
             text = "ESTATÍSTICAS DE BATALHA",
             fontSize = 13.sp,
             fontWeight = FontWeight.Black,
             color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(bottom = 8.dp)
+            modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
         )
 
         Card(
@@ -241,6 +230,9 @@ fun StatsContent(
     }
 }
 
+/**
+ * Componente para exibir uma linha de estatística (Rótulo : Valor).
+ */
 @Composable
 fun ItemLinhaStats(label: String, valor: String) {
     Row(
@@ -248,11 +240,7 @@ fun ItemLinhaStats(label: String, valor: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.secondary
-        )
+        Text(text = label, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary)
         Text(
             text = valor,
             fontSize = 20.sp,
@@ -263,6 +251,9 @@ fun ItemLinhaStats(label: String, valor: String) {
     }
 }
 
+/**
+ * Utilitário para converter uma string Base64 em um Bitmap do Android.
+ */
 fun decodificarBase64ParaBitmap(base64String: String): android.graphics.Bitmap? {
     return try {
         val stringLimpa = base64String
@@ -284,9 +275,9 @@ fun StatsContentPreview() {
         StatsContent(
             soundManager = null,
             user = User(
-                nome = "Fulano",
+                nome = "Guerreiro Preview",
                 statusAtual = 60,
-                imagenPerfilURL = "https://rlv.zcache.com.br/adesivo_redondo_foto_de_cao_cachorro_pet_personalizado-r9b188fed564a4ae4a4d26ece493e043a_zg2qos_644.webp?rlvnet=1",
+                imagenPerfilURL = "",
                 tasksCriadas = 50,
                 tasksConcluidas = 45,
                 tasksPerdidas = 5,

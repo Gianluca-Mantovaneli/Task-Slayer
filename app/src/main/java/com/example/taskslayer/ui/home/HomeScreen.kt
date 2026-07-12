@@ -53,8 +53,15 @@ import kotlin.math.roundToInt
 import com.example.taskslayer.ui.theme.AppThemeMode
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Enumeração que define as abas principais da tela inicial.
+ */
 enum class AbasHome {STATS, TODO, DAILY, HABITS}
 
+/**
+ * Função de rota para a tela Home.
+ * Envelopa o conteúdo no tema do aplicativo e gerencia o modo de tema.
+ */
 @Composable
 fun HomeRoute(
     abaAtual: AbasHome,
@@ -80,6 +87,9 @@ fun HomeRoute(
     }
 }
 
+/**
+ * Conteúdo principal da tela Home, incluindo TopAppBar, BottomBar e o conteúdo das abas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
@@ -96,18 +106,18 @@ fun HomeContent(
     var expandido: Boolean by remember { mutableStateOf(false) }
     var tituloTopBar by remember { mutableStateOf("TaskSlayer") }
 
-    // criando o soundManager
+    // Gerenciador de efeitos sonoros
     val context = LocalContext.current
     val soundManager = remember { SoundEffectsManager(context) }
 
-    // Floating Button Settings
+    // Configurações para o botão flutuante arrastável (FAB)
     var floatingButtonOffsetX by remember { mutableFloatStateOf(0f) }
     var floatingButtonOffsetY by remember { mutableFloatStateOf(0f) }
     var containerWidth by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableFloatStateOf(0f) }
 
     Scaffold(
-        // 1. Gaveta do Topo
+        // Barra Superior (TopAppBar)
         topBar = {
              tituloTopBar = when (abaAtual) {
                 AbasHome.TODO -> stringResource(R.string.title_aba_home_todo)
@@ -122,6 +132,7 @@ fun HomeContent(
                 ),
                 actions = {
                     Box{
+                        // Botão de Menu de Configurações
                         IconButton(onClick = { expandido = true }) {
                             Icon(
                                 modifier = Modifier.size(30.dp),
@@ -130,6 +141,7 @@ fun HomeContent(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                        // Menu suspenso com opções de Logout, Idioma e Tema
                         DropdownMenu(
                             expanded = expandido,
                             onDismissRequest = { expandido = false }
@@ -162,7 +174,7 @@ fun HomeContent(
                                 },
                                 onClick = {
                                     expandido = false
-                                // TODO: Fazer a logica de linguagem aqui
+                                // TODO: Implementar lógica de troca de idioma
                                 }
                             )
                             DropdownMenuItem(
@@ -178,13 +190,12 @@ fun HomeContent(
                                 onClick = {
                                     expandido = false
 
-                                    // Calcula o próximo tema
+                                    // Alterna entre tema claro e escuro
                                     val proximoTema = when (currentTheme) {
                                         AppThemeMode.LIGHT -> AppThemeMode.DARK
                                         else -> AppThemeMode.LIGHT
                                     }
 
-                                    // Dispara o evento para atualizar a tela inteira
                                     onThemeChange(proximoTema)
                                 }
                             )
@@ -194,13 +205,13 @@ fun HomeContent(
                 }
             )
         },
-        // 3. Gaveta da Barra de Navegação
+        // Barra Inferior de Navegação (BottomBar)
         bottomBar = {
 
             NavigationBar(
                 containerColor = Color.Transparent
             ) {
-                // Itens para navegar entre Tarefas e Estatísticas
+                // Item: Estatísticas
                 NavigationBarItem(
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
@@ -217,6 +228,7 @@ fun HomeContent(
                         )
                     }
                 )
+                // Item: To-Do (Tarefas)
                 NavigationBarItem(
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
@@ -233,6 +245,7 @@ fun HomeContent(
                         )
                     }
                 )
+                // Item: Hábitos
                 NavigationBarItem(
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
@@ -249,6 +262,7 @@ fun HomeContent(
                         )
                     }
                 )
+                // Item: Dailies (Tarefas Diárias)
                 NavigationBarItem(
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = Color.Transparent,
@@ -267,10 +281,10 @@ fun HomeContent(
                 )
             }
         },
-        // 4. Gaveta de Avisos (Snackbar)
+        // Host para SnackBar (mensagens rápidas)
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        // Conteúdo da tela
+        // Área de conteúdo principal
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -281,7 +295,7 @@ fun HomeContent(
                 }
         ) {
             when (abaAtual) {
-                // Roteamento das abas
+                // Roteamento dinâmico baseado na aba selecionada
                 AbasHome.STATS -> StatsRoute(soundManager)
                 AbasHome.TODO -> TodoRoute(
                     soundManager,
@@ -304,6 +318,7 @@ fun HomeContent(
                 )
             }
 
+            // Botão Flutuante (FAB) para adicionar itens (não exibido em STATS)
             if(abaAtual != AbasHome.STATS) {
                 FloatingActionButton(
                     modifier = Modifier
@@ -324,10 +339,10 @@ fun HomeContent(
                             val minY = -(containerHeight - fabSizePx - (marginPx * 2))
                             val maxY = 0f
 
+                            // Detecta gestos de arraste para mover o FAB na tela
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
 
-                                // Move acumulando o valor e travando rigidamente nos limites da "gaiola"
                                 floatingButtonOffsetX =
                                     (floatingButtonOffsetX + dragAmount.x).coerceIn(minX, maxX)
                                 floatingButtonOffsetY =
@@ -344,6 +359,7 @@ fun HomeContent(
                     },
                     containerColor = MaterialTheme.colorScheme.tertiary
                 ) {
+                    // Ícone com sombra para o botão de adicionar
                     Icon(
                         modifier = Modifier
                             .size(30.dp)

@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Estados da interface de usuário para criação ou edição de hábitos.
+ */
 sealed interface AddHabitUiState {
     object Idle : AddHabitUiState
     object Loading : AddHabitUiState
@@ -22,6 +25,9 @@ sealed interface AddHabitUiState {
     data class Error(val message: String) : AddHabitUiState
 }
 
+/**
+ * ViewModel responsável por gerenciar a lógica de adição, edição e exclusão de hábitos.
+ */
 class AddHabitTaskViewModel(
     private val taskRepository: TaskRepository = TaskRepository(),
     private val userRepository: UserRepository = UserRepository(),
@@ -34,6 +40,9 @@ class AddHabitTaskViewModel(
     var idTaskAtual: String = ""
     var isEditMode by mutableStateOf(false)
 
+    /**
+     * Busca os dados de um hábito para preencher o formulário em modo de edição.
+     */
     fun prepararParaEdicao(habitId: String) {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -59,7 +68,11 @@ class AddHabitTaskViewModel(
         )
     }
 
-    val ehTarefaNova = idTaskAtual.isBlank()
+    private val ehTarefaNova get() = idTaskAtual.isBlank()
+
+    /**
+     * Salva o hábito (novo ou editado) no Firestore e atualiza contadores de estatísticas.
+     */
     fun salvarTarefaHabit(
         titulo: String,
         descricao: String,
@@ -84,6 +97,8 @@ class AddHabitTaskViewModel(
 
         _uiState.value = AddHabitUiState.Loading
 
+        val seEhTarefaNova = ehTarefaNova
+
         val novoHabit = Habit(
             id = idTaskAtual,
             title = titulo,
@@ -99,7 +114,7 @@ class AddHabitTaskViewModel(
             habit = novoHabit,
             onSucesso = {
                 _uiState.value = AddHabitUiState.Success
-                if (ehTarefaNova) {
+                if (seEhTarefaNova) {
                     userRepository.modificarEstatisticaUsuario(
                         uid = uidLogado,
                         campo = "habitosAtivos",
@@ -116,6 +131,9 @@ class AddHabitTaskViewModel(
         )
     }
 
+    /**
+     * Exclui um hábito permanentemente.
+     */
     fun deletarTarefaHabit(habitId: String) {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {

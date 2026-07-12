@@ -9,12 +9,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Estados da interface de usuário para a lista de hábitos.
+ */
 sealed interface HabitsUiState {
     object Loading : HabitsUiState
     data class Success(val habits: List<Habit>) : HabitsUiState
     data class Error(val message: String) : HabitsUiState
 }
 
+/**
+ * ViewModel que gerencia a aba de hábitos.
+ * Lida com a busca de hábitos e o registro de progresso quando um hábito é praticado.
+ */
 class HabitsViewModel(
     private val repository: TaskRepository = TaskRepository(),
     private val userRepository: UserRepository = UserRepository(),
@@ -24,6 +31,9 @@ class HabitsViewModel(
     private val _uiState = MutableStateFlow<HabitsUiState>(HabitsUiState.Loading)
     val uiState: StateFlow<HabitsUiState> = _uiState.asStateFlow()
 
+    /**
+     * Busca todos os hábitos cadastrados pelo usuário no Firestore.
+     */
     fun carregarHabitos() {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -46,12 +56,15 @@ class HabitsViewModel(
         )
     }
 
+    /**
+     * Registra o impacto (positivo ou negativo) na experiência do usuário ao realizar um hábito.
+     */
     fun registrarCliqueHabito(habit: Habit) {
         val uidLogado = auth.currentUser?.uid ?: return
 
         userRepository.computarProgressoHabito(
             uid = uidLogado,
-            isPositivo = habit.impact,
+            isPositivo = habit.impact, // Define se ganha ou perde HP/Experiência
             dificuldade = habit.dificuldade
         )
     }

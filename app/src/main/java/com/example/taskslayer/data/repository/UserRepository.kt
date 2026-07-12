@@ -5,17 +5,23 @@ import com.example.taskslayer.domain.model.User
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Repositório responsável por gerenciar os dados do usuário (Guerreiro) no Firestore.
+ * Inclui operações de perfil, estatísticas e o sistema de "reputação" (XP/HP).
+ */
 class UserRepository(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     private val usersCollection = db.collection("usuarios")
 
+    /**
+     * Busca os dados completos de um usuário a partir do seu UID.
+     */
     fun buscarUsuario(uid: String, onSucesso: (User) -> Unit, onErro: (Exception) -> Unit) {
         usersCollection.document(uid)
             .get()
             .addOnSuccessListener { document ->
                 if (document != null && document.exists()) {
-                    // O Firestore converte o JSON do banco de volta para objeto User
                     val usuario = document.toObject(User::class.java)
                     if (usuario != null) {
                         onSucesso(usuario)
@@ -29,6 +35,9 @@ class UserRepository(
             }
     }
 
+    /**
+     * Salva o perfil do usuário no banco. Utilizado no momento do cadastro.
+     */
     fun salvarUsuario(user: User, onSucesso: () -> Unit, onErro: (Exception) -> Unit) {
         val uid = user.userID
         if (uid == null) {
@@ -44,21 +53,27 @@ class UserRepository(
             }
     }
 
+    /**
+     * Modifica um contador específico nas estatísticas do usuário (ex: tasksCriadas).
+     * @param modificacao Pode ser "increment" ou "decrement".
+     */
     fun modificarEstatisticaUsuario(
         uid: String,
         campo: String,
         quantidade: Long,
         modificacao: String
     ) {
-        usersCollection.document(uid)
         if (modificacao == "increment") {
             usersCollection.document(uid).update(campo, FieldValue.increment(quantidade))
         } else if (modificacao == "decrement") {
             usersCollection.document(uid).update(campo, FieldValue.increment(-quantidade))
         }
-
     }
 
+    /**
+     * Calcula e atualiza a reputação (statusAtual) e o contador de tarefas concluídas.
+     * Utiliza uma transação do Firestore para garantir que a atualização seja atômica.
+     */
     fun computarProgressoTarefa(uid: String, isConcluido: Boolean, dificuldade: Dificulty) {
         val docRef = usersCollection.document(uid)
 
@@ -69,7 +84,7 @@ class UserRepository(
             val statusAtual = snapshot.getLong("statusAtual") ?: 0L
             val tasksConcluidas = snapshot.getLong("tasksConcluidas") ?: 0L
 
-            // Define os pontos com base na dificuldade escolhida
+            // Define ganho/perda de pontos com base na dificuldade
             val pontosBase = when (dificuldade) {
                 Dificulty.TRIVIAL -> 2L
                 Dificulty.FACIL -> 5L
@@ -78,14 +93,13 @@ class UserRepository(
                 else -> 0L
             }
 
-            // Se marcou (true) soma 1L, se desmarcou (false) subtrai -1L
+            // Define se os pontos serão somados ou subtraídos
             val modificador = if (isConcluido) 1L else -1L
 
-            // Calcula os novos valores aplicando travas de segurança (clamping)
+            // Garante que os valores fiquem dentro de limites aceitáveis (0 a 100 para status)
             val novasConcluidas = (tasksConcluidas + modificador).coerceAtLeast(0L)
             val novosPontos = (statusAtual + (pontosBase * modificador)).coerceIn(0L, 100L)
 
-            // Atualiza os dois campos de forma atômica no mesmo milissegundo
             transaction.update(docRef, "tasksConcluidas", novasConcluidas)
             transaction.update(docRef, "statusAtual", novosPontos)
         }.addOnFailureListener { e ->
@@ -93,6 +107,9 @@ class UserRepository(
         }
     }
 
+    /**
+     * Atualiza a reputação do usuário baseada na prática de um hábito (Positivo ou Negativo).
+     */
     fun computarProgressoHabito(uid: String, isPositivo: Boolean, dificuldade: Dificulty) {
         val docRef = usersCollection.document(uid)
 
@@ -110,7 +127,7 @@ class UserRepository(
                 else -> 2L
             }
 
-            // Clique no botão de mais (+) soma, no botão de menos (-) subtrai
+            // Hábitos positivos aumentam reputação, negativos diminuem
             val modificador = if (isPositivo) 1L else -1L
             val novosPontos = (statusAtual + (pontosBase * modificador)).coerceIn(0L, 100L)
 

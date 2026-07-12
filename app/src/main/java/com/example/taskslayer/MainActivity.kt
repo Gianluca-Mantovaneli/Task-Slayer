@@ -18,40 +18,50 @@ import com.example.taskslayer.ui.theme.TaskSlayerTheme
 import com.example.taskslayer.ui.home.todo.AddTodoTaskRoute
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Atividade principal do aplicativo Task Slayer.
+ * Responsável por gerenciar a navegação básica (roteamento) entre as principais telas do app:
+ * Login, Registro, Home e as telas de adição/edição de tarefas.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Habilita o modo de tela cheia (edge-to-edge)
         enableEdgeToEdge()
+        
         setContent {
             TaskSlayerTheme {
-                // Estado que controla qual tela deve ser exibida ("login", "register" ou "home")
+                // Estado que controla qual tela deve ser exibida ("login", "register", "home", etc.)
+                // Verifica se o usuário já está autenticado no Firebase para decidir a tela inicial.
                 var telaAtual by remember {
                     val usuarioLogado = FirebaseAuth.getInstance().currentUser
                     val telaInicial = if (usuarioLogado != null) "home" else "login"
                     mutableStateOf(telaInicial)
                 }
 
+                // Estado para controlar a aba selecionada na Home
                 var abaHomeAtual by remember { mutableStateOf(AbasHome.STATS) }
 
+                // Armazena o ID da tarefa/hábito que está sendo editado (null se for uma nova criação)
                 var idTaskParaEditar by remember { mutableStateOf<String?>(null) }
 
-                // Sistema de roteamento baseado em string
+                // Sistema de navegação condicional simples baseado no estado 'telaAtual'
                 when (telaAtual) {
                     "login" -> LoginRoute(
                         onLoginSuccess = {
-                            telaAtual = "home" // Vai para a home após fazer login
+                            telaAtual = "home" // Navega para Home após sucesso no login
                         },
                         onNavigateToRegister = {
-                            telaAtual =
-                                "register" // Vai para a tela de registro após clicar no botão
+                            telaAtual = "register" // Navega para a tela de cadastro
                         }
                     )
                     "register" -> RegisterRoute(
                         onRegisterSuccess = {
-                            telaAtual = "home" // Vai para a home após criar a conta
+                            telaAtual = "home" // Navega para Home após criar conta com sucesso
                         },
                         onBackToLogin = {
-                            telaAtual = "login" // Vai para a tela de login após clicar no botao
+                            telaAtual = "login" // Retorna para a tela de login
                         }
                     )
                     "home" -> HomeRoute(
@@ -60,22 +70,19 @@ class MainActivity : ComponentActivity() {
                             abaHomeAtual = novaAba
                         },
                         onSignOutClick = {
-                            telaAtual = "login" // Vai para o login após deslogar
+                            telaAtual = "login" // Retorna ao login após sair da conta
                         },
                         onAddTodoClick = { idRecebido ->
                             idTaskParaEditar = idRecebido
-                            telaAtual =
-                                "addTodoTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                            telaAtual = "addTodoTask" // Vai para a tela de criação/edição de To-Do
                         },
                         onAddDailieClick = { idRecebido ->
                             idTaskParaEditar = idRecebido
-                            telaAtual =
-                                "addDailieTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                            telaAtual = "addDailieTask" // Vai para a tela de criação/edição de Diária
                         },
                         onAddHabitClick = { idRecebido ->
                             idTaskParaEditar = idRecebido
-                            telaAtual =
-                                "addHabitsTask" // Vai para a tela de adicionar tarefa após clicar no botão
+                            telaAtual = "addHabitsTask" // Vai para a tela de criação/edição de Hábito
                         }
                     )
 
@@ -91,8 +98,7 @@ class MainActivity : ComponentActivity() {
                         taskId = idTaskParaEditar,
                         onBackClick = {
                             idTaskParaEditar = null
-                            telaAtual =
-                                "home" // Vai para a home após voltar da tela de adicionar tarefa
+                            telaAtual = "home"
                         }
                     )
 

@@ -51,30 +51,34 @@ import com.example.taskslayer.domain.model.Repetition
 import com.example.taskslayer.ui.theme.TaskSlayerIcons
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
+/**
+ * Função de rota para a tela de Adição/Edição de Hábitos.
+ * Gerencia a comunicação entre o ViewModel e a interface do usuário.
+ */
 @Composable
 fun AddHabitTaskRoute(
-    habitId: String? = null, // 🎯 Recebe o ID opcional para caso de Edição
+    habitId: String? = null, // Recebe o ID caso seja edição
     onBackClick: () -> Unit,
-    viewModel: AddHabitTaskViewModel = viewModel() // 🎯 Injeta a ViewModel de Hábitos
+    viewModel: AddHabitTaskViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     var mensagemSucesso by remember { mutableStateOf("") }
 
-    // Preparando o terreno caso seja uma edição de Hábito existente
+    // Carrega dados se estiver editando um hábito existente
     LaunchedEffect(habitId) {
         if (!habitId.isNullOrBlank()) {
             viewModel.prepararParaEdicao(habitId)
         }
     }
 
-    // Captura quando o usuário clica no botão físico/gesto de voltar do Android
+    // Trata o botão de voltar do sistema
     BackHandler {
         viewModel.resetCompletamente()
         onBackClick()
     }
 
-    // Vigia do estado: Reage aos retornos da ViewModel
+    // Reage aos estados do ViewModel (Sucesso ou Erro)
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is AddHabitUiState.Success -> {
@@ -101,13 +105,12 @@ fun AddHabitTaskRoute(
         },
         onSaveTask = { titulo, descricao, dificuldade, efeitoHabito ->
             mensagemSucesso = "Hábito salvo com sucesso!"
-            // Salvando com Repetition.NONE padrão já que a tela não possui esse seletor ainda
             viewModel.salvarTarefaHabit(
                 titulo,
                 descricao,
                 dificuldade,
                 efeitoHabito,
-                Repetition.NONE
+                Repetition.NONE // Atualmente não utiliza repetição customizada
             )
         },
         onDeleteTask = {
@@ -122,6 +125,9 @@ fun AddHabitTaskRoute(
     )
 }
 
+/**
+ * Conteúdo visual do formulário de Hábito.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddHabitTaskContent(
@@ -131,14 +137,15 @@ fun AddHabitTaskContent(
     onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, efeitoHabito: Boolean) -> Unit = {_,_,_,_ ->},
     onDeleteTask: () -> Unit = {}
 ){
+    // Estados locais dos campos
     var titulo by rememberSaveable { mutableStateOf("") }
     var descricao by rememberSaveable { mutableStateOf("") }
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
-    var efeitoHabito by rememberSaveable { mutableStateOf(true) }
+    var efeitoHabito by rememberSaveable { mutableStateOf(true) } // true = Positivo, false = Negativo
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 🎯 Captura o Hábito carregado do banco para preencher a tela na edição
+    // Preenche campos ao carregar dados para edição
     LaunchedEffect(uiState) {
         if (uiState is AddHabitUiState.Loaded) {
             val habit = (uiState as AddHabitUiState.Loaded).habit
@@ -154,11 +161,8 @@ fun AddHabitTaskContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                // 🎯 Título dinâmico baseado no modo da tela
                 title = { Text(text = if (isEditMode) "Editar Hábito" else "Adicionar Hábito") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -182,7 +186,6 @@ fun AddHabitTaskContent(
                         onClick = {
                             onSaveTask(titulo, descricao, dificuldadeSelecionada, efeitoHabito)
                         }
-                        // 🎯 enabled removido para permitir validação com Toast via ViewModel!
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
@@ -202,7 +205,7 @@ fun AddHabitTaskContent(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título
+            // Campo: Título
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,7 +214,7 @@ fun AddHabitTaskContent(
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
             )
-            // Descrição
+            // Campo: Descrição
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -221,7 +224,8 @@ fun AddHabitTaskContent(
                 onValueChange = { descricao = it },
                 label = { Text("Descrição") },
             )
-            // Dificuldade
+            
+            // Seção: Dificuldade
             Text(
                 text = "Dificuldade",
                 style = MaterialTheme.typography.titleMedium,
@@ -236,116 +240,14 @@ fun AddHabitTaskContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Trivial
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.TRIVIAL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corTrivial = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.trivialDificultyIcon),
-                        contentDescription = "Dificuldade Trivial",
-                        tint = corTrivial,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Trivial",
-                        color = corTrivial,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.TRIVIAL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                // Fácil
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.FACIL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corFacil = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.easyDificultyIcon),
-                        contentDescription = "Dificuldade Fácil",
-                        tint = corFacil,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Fácil",
-                        color = corFacil,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.FACIL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                // Médio
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.MEDIO },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corMedio = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.mediumDificultyIcon),
-                        contentDescription = "Dificuldade Média",
-                        tint = corMedio,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Média",
-                        color = corMedio,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.MEDIO) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                // Difícil
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.DIFICIL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corDificil = if (dificuldadeSelecionada == Dificulty.DIFICIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.hardDificultyIcon),
-                        contentDescription = "Dificuldade Difícil",
-                        tint = corDificil,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Difícil",
-                        color = corDificil,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.DIFICIL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                // Opções de Dificuldade
+                DifficultyItem(label = "Trivial", icon = TaskSlayerIcons.trivialDificultyIcon, isSelected = dificuldadeSelecionada == Dificulty.TRIVIAL, onClick = { dificuldadeSelecionada = Dificulty.TRIVIAL })
+                DifficultyItem(label = "Fácil", icon = TaskSlayerIcons.easyDificultyIcon, isSelected = dificuldadeSelecionada == Dificulty.FACIL, onClick = { dificuldadeSelecionada = Dificulty.FACIL })
+                DifficultyItem(label = "Média", icon = TaskSlayerIcons.mediumDificultyIcon, isSelected = dificuldadeSelecionada == Dificulty.MEDIO, onClick = { dificuldadeSelecionada = Dificulty.MEDIO })
+                DifficultyItem(label = "Difícil", icon = TaskSlayerIcons.hardDificultyIcon, isSelected = dificuldadeSelecionada == Dificulty.DIFICIL, onClick = { dificuldadeSelecionada = Dificulty.DIFICIL })
             }
 
-            // Seção de Efeito
+            // Seção: Efeito do Hábito (Se ajuda ou atrapalha o Guerreiro)
             Text(
                 text = "Efeito",
                 style = MaterialTheme.typography.titleMedium,
@@ -353,46 +255,24 @@ fun AddHabitTaskContent(
                 modifier = Modifier.padding(horizontal = 10.dp)
             )
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "Positivo",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "Negativo",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
+                Text("Positivo", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                Text("Negativo", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
             }
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(
-                    onClick = { efeitoHabito = true },
-                    modifier = Modifier.weight(1f)
-                ) {
+                IconButton(onClick = { efeitoHabito = true }, modifier = Modifier.weight(1f)) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.positiveHabitIcon),
                         contentDescription = "Efeito positivo",
                         tint = if (efeitoHabito) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                     )
                 }
-                IconButton(
-                    onClick = { efeitoHabito = false },
-                    modifier = Modifier.weight(1f)
-                ) {
+                IconButton(onClick = { efeitoHabito = false }, modifier = Modifier.weight(1f)) {
                     Icon(
                         painter = painterResource(id = TaskSlayerIcons.negativeHabitIcon),
                         contentDescription = "Efeito negativo",
@@ -401,6 +281,23 @@ fun AddHabitTaskContent(
                 }
             }
         }
+    }
+}
+
+/**
+ * Item para seleção de dificuldade.
+ */
+@Composable
+private fun DifficultyItem(label: String, icon: Int, isSelected: Boolean, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .padding(4.dp)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+        Icon(painter = painterResource(id = icon), contentDescription = label, tint = color, modifier = Modifier.size(28.dp))
+        Text(text = label, color = color, style = MaterialTheme.typography.bodySmall, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, modifier = Modifier.padding(top = 4.dp))
     }
 }
 

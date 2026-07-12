@@ -36,6 +36,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusDirection
 
+/**
+ * Função de rota para a tela de Login.
+ * Gerencia o estado da UI e a navegação baseada nos eventos do ViewModel.
+ */
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
@@ -45,6 +49,7 @@ fun LoginRoute(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Efeito disparado sempre que o estado da UI muda
     LaunchedEffect(uiState) {
         when(uiState) {
             is AuthUiState.Success -> {
@@ -52,6 +57,7 @@ fun LoginRoute(
                 viewModel.resetState()
             }
             is AuthUiState.Error -> {
+                // Exibe mensagem de erro via Toast
                 Toast.makeText(context, (uiState as AuthUiState.Error).theMessage, Toast.LENGTH_LONG).show()
                 viewModel.resetState()
             }
@@ -71,6 +77,10 @@ fun LoginRoute(
     )
 }
 
+/**
+ * Conteúdo visual da tela de Login.
+ * Responsável pelo layout, campos de entrada e botões.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginContent(
@@ -79,14 +89,15 @@ fun LoginContent(
     onRegisterClick: () -> Unit = {},
     onForgotPasswordClick: (String, (Boolean, String) -> Unit) -> Unit = { _, _ -> }
 ){
+    // Estados locais para os campos de entrada
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
 
+    // Estados para o diálogo de recuperação de senha
     var mostrarDialogoRecuperacao by remember { mutableStateOf(false) }
     var emailRecuperacao by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-
     val focusManager = LocalFocusManager.current
 
     Box(modifier = Modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)){
@@ -95,6 +106,7 @@ fun LoginContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Título do Aplicativo
             Text(
                 text = stringResource(R.string.titulo_App),
                 textAlign = TextAlign.Center,
@@ -106,7 +118,7 @@ fun LoginContent(
                 )
             )
 
-            // Seção de Ícones das Katanas e Capacete
+            // Seção de Ícones das Katanas e Capacete com efeito de sombra/sobreposição
             Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center){
                 Icon(
                     modifier = Modifier.size(160.dp).offset(x = 4.dp, y = 4.dp),
@@ -130,6 +142,7 @@ fun LoginContent(
                 )
             }
 
+            // Título da tela de Login
             Text(
                 text = stringResource(R.string.titulo_login),
                 style = TextStyle(fontSize = 28.sp, color = MaterialTheme.colorScheme.primary)
@@ -137,6 +150,7 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo de entrada de E-mail
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = email,
@@ -144,13 +158,14 @@ fun LoginContent(
                 label = { Text(stringResource(R.string.label_email)) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next // Transforma o botão Enter em "Avançar"
+                    imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) } // Pula para o campo de baixo
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 )
             )
 
+            // Campo de entrada de Senha
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 value = senha,
@@ -159,18 +174,19 @@ fun LoginContent(
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done // No último campo, mostra o botão de "Concluir"
+                    imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        focusManager.clearFocus() // Esconde o teclado/foco ao terminar
-                        onLoginClick(email, senha) // Dispara o clique de login ao passar da senha
+                        focusManager.clearFocus()
+                        onLoginClick(email, senha)
                     }
                 )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Botão de Login
             Button(
                 onClick = { onLoginClick(email, senha) },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -186,18 +202,18 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Não tem conta? Cadastre-se
+            // Link para Cadastro
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(R.string.text_nao_tem_conta) + " ", color = MaterialTheme.colorScheme.secondary)
                 Text(
                     text = stringResource(R.string.text_cadastre_se),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    modifier = Modifier.clickable { onRegisterClick() } // Navega ao clicar
+                    modifier = Modifier.clickable { onRegisterClick() }
                 )
             }
 
-            // Esqueceu a senha? Redefina
+            // Link para Recuperação de Senha
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(R.string.text_esqueceu_a_senha) + " ", color = MaterialTheme.colorScheme.secondary)
                 Text(
@@ -205,7 +221,6 @@ fun LoginContent(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     modifier = Modifier.clickable {
-                        // Copia o e-mail principal se o usuário já tiver digitado metade dele
                         emailRecuperacao = email
                         mostrarDialogoRecuperacao = true
                     }
@@ -214,6 +229,7 @@ fun LoginContent(
         }
     }
 
+    // Diálogo de Recuperação de Senha
     if (mostrarDialogoRecuperacao) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoRecuperacao = false },

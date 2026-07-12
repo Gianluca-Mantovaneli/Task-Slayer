@@ -24,6 +24,10 @@ import com.example.taskslayer.ui.home.components.TodoCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
+/**
+ * Função de rota para a aba de tarefas To-Do.
+ * Gerencia o estado de carregamento, sucesso e erro da lista de tarefas.
+ */
 @Composable
 fun TodoRoute(
     soundManager: SoundEffectsManager?,
@@ -31,6 +35,8 @@ fun TodoRoute(
     viewModel: TodoViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
+    // Carrega as tarefas sempre que a tela é iniciada
     LaunchedEffect(Unit) {
         viewModel.carregarTarefasTodo()
     }
@@ -61,6 +67,9 @@ fun TodoRoute(
     }
 }
 
+/**
+ * Conteúdo visual da lista de tarefas To-Do.
+ */
 @Composable
 fun TodoContent(
     tasks: List<Todo>,
@@ -74,6 +83,7 @@ fun TodoContent(
             .background(MaterialTheme.colorScheme.background)
     ){
         if (tasks.isEmpty()) {
+            // Exibição quando não há tarefas
             Text(
                 text = "Nenhuma tarefa pendente. \nDescanse, Samurai!",
                 modifier = Modifier.align(Alignment.Center),
@@ -82,7 +92,7 @@ fun TodoContent(
                 textAlign = TextAlign.Center
             )
         } else {
-            // Listando as tarefas do banco desse usuario
+            // Lista rolável de tarefas usando LazyColumn
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(
                     items = tasks,

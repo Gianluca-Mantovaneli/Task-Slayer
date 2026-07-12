@@ -14,14 +14,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Estados da interface de usuário para criação ou edição de missões diárias.
+ */
 sealed interface AddDailieUiState {
     object Idle : AddDailieUiState
     object Loading : AddDailieUiState
     object Success : AddDailieUiState
-    data class Loaded(val dailie: Dailie) : AddDailieUiState
+    data class Loaded(val dailie: Dailie) : AddDailieUiState // Indica que os dados da diária foram carregados para edição
     data class Error(val message: String) : AddDailieUiState
 }
 
+/**
+ * ViewModel responsável por gerenciar a criação, edição e exclusão de missões diárias (Dailies).
+ */
 class AddDailieTaskViewModel(
     private val taskRepository: TaskRepository = TaskRepository(),
     private val userRepository: UserRepository = UserRepository(),
@@ -35,8 +41,11 @@ class AddDailieTaskViewModel(
 
     private var statusDoneAtual: Boolean = false
 
-    val ehTarefaNova get() = idTaskAtual.isBlank()
+    private val ehTarefaNova get() = idTaskAtual.isBlank()
 
+    /**
+     * Busca os dados de uma missão diária existente para preencher o formulário de edição.
+     */
     fun prepararParaEdicao(dailieId: String) {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -63,6 +72,10 @@ class AddDailieTaskViewModel(
         )
     }
 
+    /**
+     * Salva a missão diária (nova ou editada) no Firestore.
+     * Valida campos obrigatórios antes de persistir.
+     */
     fun salvarTarefaDailie(
         titulo: String,
         descricao: String,
@@ -106,6 +119,7 @@ class AddDailieTaskViewModel(
             onSucesso = {
                 _uiState.value = AddDailieUiState.Success
 
+                // Incrementa estatísticas se for uma nova criação
                 if (seEhTarefaNova) {
                     userRepository.modificarEstatisticaUsuario(
                         uid = uidLogado,
@@ -123,6 +137,9 @@ class AddDailieTaskViewModel(
         )
     }
 
+    /**
+     * Remove uma missão diária permanentemente.
+     */
     fun deletarTarefaDailie(dailieId: String) {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -137,12 +154,7 @@ class AddDailieTaskViewModel(
             taskId = dailieId,
             onSucesso = {
                 _uiState.value = AddDailieUiState.Success
-                userRepository.modificarEstatisticaUsuario(
-                    uid = uidLogado,
-                    campo = "tasksCriadas",
-                    quantidade = 1,
-                    modificacao = "decrement"
-                )
+                // Removido o decremento de 'tasksCriadas' para manter a estatística histórica
             },
             onErro = { exception ->
                 _uiState.value = AddDailieUiState.Error(
@@ -152,10 +164,16 @@ class AddDailieTaskViewModel(
         )
     }
 
+    /**
+     * Reseta o estado da UI para Idle.
+     */
     fun resetUiStateToIdle() {
         _uiState.value = AddDailieUiState.Idle
     }
 
+    /**
+     * Limpa completamente o estado do ViewModel.
+     */
     fun resetCompletamente() {
         _uiState.value = AddDailieUiState.Idle
         idTaskAtual = ""

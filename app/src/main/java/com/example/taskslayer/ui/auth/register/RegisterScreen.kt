@@ -34,6 +34,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusDirection
 
+/**
+ * Função de rota para a tela de Registro (Cadastro).
+ * Gerencia o fluxo de navegação e exibição de mensagens de sucesso ou erro.
+ */
 @Composable
 fun RegisterRoute(
     onRegisterSuccess: () -> Unit,
@@ -43,6 +47,7 @@ fun RegisterRoute(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Observa mudanças no estado da UI de autenticação
     LaunchedEffect(uiState) {
         when(uiState) {
             is AuthUiState.Success -> {
@@ -65,12 +70,17 @@ fun RegisterRoute(
     )
 }
 
+/**
+ * Conteúdo visual da tela de Registro.
+ * Contém o formulário para criação de uma nova conta.
+ */
 @Composable
 fun RegisterContent(
     uiState: AuthUiState = AuthUiState.Idle,
     onRegisterClick: (String, String, String, String) -> Unit = { _, _, _, _ -> },
     onBackToLoginClick: () -> Unit = {}
 ) {
+    // Estados locais para os campos do formulário
     var nickname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
@@ -83,6 +93,7 @@ fun RegisterContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Título principal do App
             Text(
                 text = stringResource(R.string.titulo_App),
                 textAlign = TextAlign.Center,
@@ -93,12 +104,14 @@ fun RegisterContent(
                     shadow = Shadow(color = Color.Black, blurRadius = 10f, offset = Offset(4.0f, 4.0f))
                 )
             )
+            // Título específico da tela
             Text(
                 text = stringResource(R.string.titulo_tela_cadastro),
                 style = TextStyle(fontSize = 28.sp, color = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.padding(12.dp)
             )
 
+            // Campo para Nickname
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_nickname)) },
@@ -107,6 +120,7 @@ fun RegisterContent(
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
 
+            // Campo para E-mail
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_email)) },
@@ -115,6 +129,7 @@ fun RegisterContent(
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
 
+            // Campo para Senha
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_senha)) },
@@ -124,6 +139,7 @@ fun RegisterContent(
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
             )
 
+            // Campo para Confirmar Senha
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 label = { Text(stringResource(R.string.label_confirmar_senha)) },
@@ -133,13 +149,14 @@ fun RegisterContent(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        onRegisterClick(nickname, email, senha, confirmarSenha) // Já tenta registrar ao dar enter no último
+                        onRegisterClick(nickname, email, senha, confirmarSenha)
                     }
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Botão de Cadastro
             Button(
                 onClick = { onRegisterClick(nickname, email, senha, confirmarSenha) },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -155,6 +172,7 @@ fun RegisterContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Link para retornar ao Login
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(
                     text = "Já possui uma conta? ",

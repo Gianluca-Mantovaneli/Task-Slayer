@@ -27,6 +27,10 @@ import com.example.taskslayer.ui.home.components.DailieCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
+/**
+ * Função de rota para a aba de Dailies (Missões Diárias).
+ * Gerencia o estado de carregamento e a interação com o ViewModel de Dailies.
+ */
 @Composable
 fun DailieRoute(
     soundManager: SoundEffectsManager?,
@@ -35,7 +39,7 @@ fun DailieRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Dispara a escuta em tempo real assim que a tela abre
+    // Carrega as missões diárias ao iniciar a aba
     LaunchedEffect(Unit) {
         viewModel.carregarDailies()
     }
@@ -59,6 +63,7 @@ fun DailieRoute(
                 soundManager = soundManager,
                 onNavigateToEdit = onNavigateToEdit,
                 onCheckedChange = { dailie, novoStatus ->
+                    // Alterna o status de conclusão da missão no dia atual
                     viewModel.alternarStatusDailie(dailie, novoStatus)
                 }
             )
@@ -66,6 +71,9 @@ fun DailieRoute(
     }
 }
 
+/**
+ * Conteúdo visual da lista de missões diárias.
+ */
 @Composable
 fun DailieContent(
     dailies: List<Dailie>,
@@ -80,6 +88,7 @@ fun DailieContent(
         contentAlignment = Alignment.TopCenter
     ) {
         if (dailies.isEmpty()) {
+            // Mensagem quando não há missões cadastradas
             Text(
                 text = "Nenhuma missão diária ativa.\nAproveite o descanso, Guerreiro!",
                 style = MaterialTheme.typography.bodyLarge,
@@ -88,6 +97,7 @@ fun DailieContent(
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
+            // Lista de cartões de missões diárias
             LazyColumn(
                 modifier = Modifier.padding(top = 4.dp)
             ) {
@@ -107,6 +117,9 @@ fun DailieContent(
     }
 }
 
+/**
+ * Extensão utilitária para formatar a exibição da repetição da missão diária.
+ */
 private fun Dailie.formatarFrequencia(): List<String> {
     val tipo = when (this.repeticao) {
         Repetition.DIARIO -> "Diário"
@@ -115,7 +128,7 @@ private fun Dailie.formatarFrequencia(): List<String> {
         else -> "Diário"
     }
     return if (this.aCada > 1) {
-        listOf(tipo, "a cada", "${this.aCada}", "dias")
+        listOf(tipo, "a cada", "${this.aCada}", "unidades")
     } else {
         listOf(tipo)
     }

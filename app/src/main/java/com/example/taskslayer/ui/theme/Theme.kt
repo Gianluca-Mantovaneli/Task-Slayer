@@ -15,11 +15,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+/**
+ * Opções de modo de tema suportadas pelo aplicativo.
+ */
 enum class AppThemeMode {
-    SYSTEM, // Segue o sistema do celular (Padrão)
-    LIGHT,  // Força modo claro
-    DARK    // Força modo escuro
+    SYSTEM, // Segue a configuração do sistema Android
+    LIGHT,  // Força o uso do tema claro
+    DARK    // Força o uso do tema escuro
 }
+
+/**
+ * Esquema de cores para o Tema Escuro.
+ */
 private val DarkColorScheme = darkColorScheme(
     primary = LaranjaSamurai,
     secondary = CinzaAco,
@@ -27,6 +34,9 @@ private val DarkColorScheme = darkColorScheme(
     background = CinzaGraphite
 )
 
+/**
+ * Esquema de cores para o Tema Claro.
+ */
 private val LightColorScheme = lightColorScheme(
     primary = LaranjaTerracota,
     secondary = PretoObisidiana,
@@ -34,14 +44,19 @@ private val LightColorScheme = lightColorScheme(
     background = BrancoPergaminho
 )
 
+/**
+ * Tema principal do Task Slayer.
+ * Gerencia a alternância entre temas e aplica as cores e tipografia definidas.
+ */
 @Composable
 fun TaskSlayerTheme(
     themeMode: AppThemeMode = AppThemeMode.SYSTEM,
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = false, // Suporte a cores dinâmicas do Android 12+
     content: @Composable () -> Unit
 ) {
     val isSystemDark = isSystemInDarkTheme()
 
+    // Decide se deve usar o tema escuro com base na preferência do usuário ou sistema
     val darkTheme = when (themeMode) {
         AppThemeMode.SYSTEM -> isSystemDark
         AppThemeMode.LIGHT -> false
@@ -56,10 +71,12 @@ fun TaskSlayerTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            // Ajusta a cor da barra de status para combinar com o tema
             window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }

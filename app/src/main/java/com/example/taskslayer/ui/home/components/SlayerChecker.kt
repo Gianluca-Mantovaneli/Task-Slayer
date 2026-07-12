@@ -20,6 +20,10 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
+/**
+ * Checkbox personalizado com temática Samurai (SlayerChecker).
+ * Utiliza cantos cortados e um desenho de "visto" feito manualmente via Canvas.
+ */
 @Composable
 fun SlayerChecker(
     checked: Boolean,
@@ -45,19 +49,24 @@ fun SlayerChecker(
             .clickable { onCheckedChange(!checked) }
     ) {
         if (checked) {
+            // Desenha o símbolo de "visto" personalizado quando marcado
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
                 val h = size.height
                 val checkmarkPath = Path().apply {
+                    // Ponto inicial
                     moveTo(w * 0.22f, h * 0.50f)
+                    // Curva/Linha para a base do V
                     lineTo(w * 0.32f, h * 0.62f)
                     lineTo(w * 0.42f, h * 0.75f)
 
-
+                    // Subida do V
                     lineTo(w * 0.58f, h * 0.50f)
                     lineTo(w * 0.72f, h * 0.32f)
                     lineTo(w * 0.88f, h * 0.18f)
                 }
+                
+                // Desenha o contorno principal do visto
                 drawPath(
                     path = checkmarkPath,
                     color = Color.Black,
@@ -67,6 +76,8 @@ fun SlayerChecker(
                         join = StrokeJoin.Round
                     )
                 )
+                
+                // Desenha um detalhe interno para profundidade
                 drawPath(
                     path = checkmarkPath,
                     color = Color(0xFF252525),
@@ -76,6 +87,8 @@ fun SlayerChecker(
                         join = StrokeJoin.Round
                     )
                 )
+                
+                // Pequenos detalhes estilísticos nas pontas do traço
                 drawLine(
                     color = Color.Black.copy(alpha = 0.4f),
                     start = Offset(w * 0.42f, h * 0.75f),

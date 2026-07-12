@@ -60,6 +60,10 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/**
+ * Função de rota para a tela de Adição/Edição de tarefas To-Do.
+ * Gerencia a inicialização dos dados para edição e reações aos estados do ViewModel.
+ */
 @Composable
 fun AddTodoTaskRoute(
     taskId: String? = null,
@@ -71,19 +75,20 @@ fun AddTodoTaskRoute(
     val ctx = LocalContext.current
     var mensagemSucesso by remember { mutableStateOf("") }
 
-    // Preparando para edição
+    // Efeito para carregar dados se estiver em modo de edição
     LaunchedEffect(taskId) {
         if (!taskId.isNullOrBlank()) {
             viewModel.prepararParaEdicao(taskId)
         }
     }
 
-    // Garante que se o usuário voltar fisicamente
+    // Trata o botão de voltar físico do Android
     BackHandler {
         viewModel.resetCompletamente()
         onBackClick()
     }
 
+    // Observa mudanças no estado para exibir feedbacks (Toasts) e navegar
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is AddTodoUiState.Success -> {
@@ -93,12 +98,11 @@ fun AddTodoTaskRoute(
             }
 
             is AddTodoUiState.Error -> {
-                // Mostra o Toast com a mensagem exata que a ViewModel mandou!
                 Toast.makeText(ctx, state.message, Toast.LENGTH_SHORT).show()
                 viewModel.resetUiStateToIdle()
             }
 
-            else -> {} // Não faz nada se for Loading ou Loaded
+            else -> {}
         }
     }
 
@@ -125,6 +129,10 @@ fun AddTodoTaskRoute(
     )
 }
 
+/**
+ * Conteúdo visual da tela de cadastro de tarefas.
+ * Inclui campos de texto, seleção de dificuldade por ícones e seletor de data.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTodoTaskContent(
@@ -134,6 +142,7 @@ fun AddTodoTaskContent(
     onSaveTask: (titulo: String, descricao: String, dificuldade: Dificulty, deadline: String) -> Unit = {_,_,_,_ ->},
     onDeleteTask: () -> Unit = {}
 ){
+    // Estados locais dos campos do formulário
     var titulo by rememberSaveable { mutableStateOf("") }
     var descricao by rememberSaveable { mutableStateOf("") }
     var dificuldadeSelecionada by rememberSaveable { mutableStateOf(Dificulty.NONE) }
@@ -142,7 +151,7 @@ fun AddTodoTaskContent(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-
+    // Atualiza os campos locais quando os dados da tarefa para edição são carregados
     LaunchedEffect(uiState) {
         if (uiState is AddTodoUiState.Loaded) {
             val todo = (uiState as AddTodoUiState.Loaded).todo
@@ -150,16 +159,12 @@ fun AddTodoTaskContent(
             descricao = todo.description
             dificuldadeSelecionada = todo.dificuldade
             deadline = todo.deadline
-
-            // Importante: Reseta para Idle para o vigia não travar os campos se você digitar
             viewModel.resetUiStateToIdle()
         }
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-
-    val isFormValid = titulo.isNotBlank() && dificuldadeSelecionada != Dificulty.NONE
 
     Scaffold(
         topBar = {
@@ -176,6 +181,7 @@ fun AddTodoTaskContent(
                     }
                 },
                 actions = {
+                    // Botão de Deletar (apenas em modo de edição)
                     if(isEditMode){
                         IconButton(onClick = onDeleteTask) {
                             Icon(
@@ -185,6 +191,7 @@ fun AddTodoTaskContent(
                             )
                         }
                     }
+                    // Botão de Salvar/Enviar
                     IconButton(
                         onClick = {
                             onSaveTask(
@@ -211,7 +218,7 @@ fun AddTodoTaskContent(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            // Título
+            // Campo: Título
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -220,7 +227,7 @@ fun AddTodoTaskContent(
                 onValueChange = { titulo = it },
                 label = { Text("Título") },
             )
-            // Descrição
+            // Campo: Descrição
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -230,7 +237,8 @@ fun AddTodoTaskContent(
                 onValueChange = { descricao = it },
                 label = { Text("Descrição") },
             )
-            // Dificuldade
+            
+            // Seção: Dificuldade
             Text(
                 text = "Dificuldade",
                 style = MaterialTheme.typography.titleMedium,
@@ -245,115 +253,42 @@ fun AddTodoTaskContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Opções de Dificuldade representadas por colunas clicáveis
+                
                 // Trivial
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.TRIVIAL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corTrivial = if (dificuldadeSelecionada == Dificulty.TRIVIAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.trivialDificultyIcon),
-                        contentDescription = "Dificuldade Trivial",
-                        tint = corTrivial,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Trivial",
-                        color = corTrivial,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.TRIVIAL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                DifficultyItem(
+                    label = "Trivial",
+                    icon = TaskSlayerIcons.trivialDificultyIcon,
+                    isSelected = dificuldadeSelecionada == Dificulty.TRIVIAL,
+                    onClick = { dificuldadeSelecionada = Dificulty.TRIVIAL }
+                )
 
                 // Fácil
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.FACIL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corFacil = if (dificuldadeSelecionada == Dificulty.FACIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.easyDificultyIcon),
-                        contentDescription = "Dificuldade Fácil",
-                        tint = corFacil,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Fácil",
-                        color = corFacil,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.FACIL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                DifficultyItem(
+                    label = "Fácil",
+                    icon = TaskSlayerIcons.easyDificultyIcon,
+                    isSelected = dificuldadeSelecionada == Dificulty.FACIL,
+                    onClick = { dificuldadeSelecionada = Dificulty.FACIL }
+                )
 
                 // Médio
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.MEDIO },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corMedio = if (dificuldadeSelecionada == Dificulty.MEDIO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.mediumDificultyIcon),
-                        contentDescription = "Dificuldade Média",
-                        tint = corMedio,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Média",
-                        color = corMedio,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.MEDIO) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                DifficultyItem(
+                    label = "Média",
+                    icon = TaskSlayerIcons.mediumDificultyIcon,
+                    isSelected = dificuldadeSelecionada == Dificulty.MEDIO,
+                    onClick = { dificuldadeSelecionada = Dificulty.MEDIO }
+                )
 
                 // Difícil
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { dificuldadeSelecionada = Dificulty.DIFICIL },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val corDificil = if (dificuldadeSelecionada == Dificulty.DIFICIL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    Icon(
-                        painter = painterResource(id = TaskSlayerIcons.hardDificultyIcon),
-                        contentDescription = "Dificuldade Difícil",
-                        tint = corDificil,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Text(
-                        text = "Difícil",
-                        color = corDificil,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (dificuldadeSelecionada == Dificulty.DIFICIL) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
+                DifficultyItem(
+                    label = "Difícil",
+                    icon = TaskSlayerIcons.hardDificultyIcon,
+                    isSelected = dificuldadeSelecionada == Dificulty.DIFICIL,
+                    onClick = { dificuldadeSelecionada = Dificulty.DIFICIL }
+                )
             }
-            // Deadline
+            
+            // Seção: Deadline (Prazo)
             Text(
                 text = "Prazo final (Deadline)",
                 style = MaterialTheme.typography.titleMedium,
@@ -377,6 +312,7 @@ fun AddTodoTaskContent(
                         disabledBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
+                // Camada invisível para capturar o clique e abrir o seletor de data
                 Box(modifier = Modifier
                     .matchParentSize()
                     .clickable { showDatePicker = true })
@@ -384,6 +320,7 @@ fun AddTodoTaskContent(
         }
     }
 
+    // Diálogo de seleção de data (DatePicker)
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -397,6 +334,7 @@ fun AddTodoTaskContent(
 
                         val hoje = LocalDate.now()
 
+                        // Validação para não permitir datas retroativas
                         if (date.isBefore(hoje)) {
                             Toast.makeText(
                                 context,
@@ -423,6 +361,42 @@ fun AddTodoTaskContent(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+}
+
+/**
+ * Componente interno para representar um item de seleção de dificuldade.
+ */
+@Composable
+private fun DifficultyItem(
+    label: String,
+    icon: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(4.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = label,
+            tint = color,
+            modifier = Modifier.size(28.dp)
+        )
+        Text(
+            text = label,
+            color = color,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }
 

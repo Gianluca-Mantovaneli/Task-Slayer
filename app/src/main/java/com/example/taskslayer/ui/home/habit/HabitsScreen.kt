@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,7 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,14 +24,19 @@ import com.example.taskslayer.ui.home.components.HabitCard
 import com.example.taskslayer.tools.SoundEffectsManager
 import com.example.taskslayer.ui.theme.TaskSlayerTheme
 
+/**
+ * Função de rota para a aba de Hábitos.
+ * Gerencia o carregamento e exibição da lista de hábitos do usuário.
+ */
 @Composable
 fun HabitsRoute(
     soundManager: SoundEffectsManager?,
-    onHabitClick: (String) -> Unit,
+    onHabitClick: (String) -> Unit, // Navegação para edição ao clicar no card
     viewModel: HabitsViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Carrega os hábitos ao iniciar a aba
     LaunchedEffect(Unit) {
         viewModel.carregarHabitos()
     }
@@ -57,6 +60,7 @@ fun HabitsRoute(
                 soundManager = soundManager,
                 onHabitClick = onHabitClick,
                 onActionClick = { habit ->
+                    // Registra a execução do hábito (positivo ou negativo)
                     viewModel.registrarCliqueHabito(habit)
                 }
             )
@@ -64,6 +68,9 @@ fun HabitsRoute(
     }
 }
 
+/**
+ * Conteúdo visual da lista de hábitos.
+ */
 @Composable
 fun HabitsContent(
     habits: List<Habit>,
@@ -78,6 +85,7 @@ fun HabitsContent(
         contentAlignment = Alignment.TopCenter
     ){
         if (habits.isEmpty()) {
+            // Placeholder para lista vazia
             Text(
                 text = "Nenhum hábito cadastrado. \nComece sua jornada!",
                 style = MaterialTheme.typography.bodyLarge,
@@ -86,6 +94,7 @@ fun HabitsContent(
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
+            // Exibe os hábitos em uma lista eficiente (LazyColumn)
             LazyColumn {
                 items(habits) { habit ->
                     HabitCard(

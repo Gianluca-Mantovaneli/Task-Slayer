@@ -16,12 +16,19 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
+/**
+ * Estados da interface para a tela de estatísticas.
+ */
 sealed interface StatsUiState {
     object Loading : StatsUiState
     data class Success(val user: User) : StatsUiState
     data class Error(val message: String) : StatsUiState
 }
 
+/**
+ * ViewModel que gerencia os dados do perfil e estatísticas do usuário.
+ * Também lida com o processamento de imagem de perfil (conversão para Base64).
+ */
 class StatsViewModel(
     private val userRepository: UserRepository = UserRepository(),
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -30,6 +37,9 @@ class StatsViewModel(
     private val _uiState = MutableStateFlow<StatsUiState>(StatsUiState.Loading)
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
+    /**
+     * Busca os dados atualizados do usuário (guerreiro) no Firestore.
+     */
     fun carregarEstatisticas() {
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -52,6 +62,14 @@ class StatsViewModel(
         )
     }
 
+    /**
+     * Processa uma imagem selecionada da galeria:
+     * 1. Lê a URI
+     * 2. Redimensiona para economia de espaço (200x200)
+     * 3. Comprime em JPEG
+     * 4. Converte em String Base64
+     * 5. Salva no Firestore
+     */
     fun transformarFotoEmBase64(context: Context, uri: Uri) {
         val userId = auth.currentUser?.uid ?: return
         _uiState.value = StatsUiState.Loading
@@ -66,17 +84,21 @@ class StatsViewModel(
                 return
             }
 
+            // Redimensionamento para manter o banco leve
             val bitmapReduzido = Bitmap.createScaledBitmap(bitmapOriginal, 200, 200, true)
 
             val outputStream = ByteArrayOutputStream()
             bitmapReduzido.compress(Bitmap.CompressFormat.JPEG, 75, outputStream)
             val bytesDaImagem = outputStream.toByteArray()
 
+            // Codificação para string
             val stringBase64 = Base64.encodeToString(bytesDaImagem, Base64.NO_WRAP)
 
+            // Atualização direta no documento do usuário
             FirebaseFirestore.getInstance().collection("usuarios").document(userId)
                 .update("imagenPerfilURL", stringBase64)
                 .addOnSuccessListener {
+                    // Recarrega estatísticas para atualizar a UI com a nova foto
                     carregarEstatisticas()
                 }
 
