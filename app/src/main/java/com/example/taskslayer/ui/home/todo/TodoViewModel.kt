@@ -16,11 +16,11 @@ sealed interface TodoUiState {
     data class Error(val message: String) : TodoUiState
 }
 
-class TodoViewModel : ViewModel() {
-
-    private val taskRepository = TaskRepository()
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
+class TodoViewModel(
+    private val taskRepository: TaskRepository = TaskRepository(),
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TodoUiState>(TodoUiState.Loading)
     val uiState: StateFlow<TodoUiState> = _uiState.asStateFlow()

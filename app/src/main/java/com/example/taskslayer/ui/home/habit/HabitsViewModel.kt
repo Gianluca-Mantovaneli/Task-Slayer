@@ -15,11 +15,11 @@ sealed interface HabitsUiState {
     data class Error(val message: String) : HabitsUiState
 }
 
-class HabitsViewModel : ViewModel() {
-
-    private val repository = TaskRepository()
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
+class HabitsViewModel(
+    private val repository: TaskRepository = TaskRepository(),
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HabitsUiState>(HabitsUiState.Loading)
     val uiState: StateFlow<HabitsUiState> = _uiState.asStateFlow()

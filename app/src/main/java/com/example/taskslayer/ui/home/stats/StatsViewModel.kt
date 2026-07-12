@@ -22,10 +22,10 @@ sealed interface StatsUiState {
     data class Error(val message: String) : StatsUiState
 }
 
-class StatsViewModel : ViewModel() {
-
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
+class StatsViewModel(
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StatsUiState>(StatsUiState.Loading)
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()

@@ -16,11 +16,11 @@ sealed interface DailiesUiState {
     data class Error(val message: String) : DailiesUiState
 }
 
-class DailiesViewModel : ViewModel() {
-
-    private val taskRepository = TaskRepository()
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
+class DailiesViewModel(
+    private val taskRepository: TaskRepository = TaskRepository(),
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<DailiesUiState>(DailiesUiState.Loading)
     val uiState: StateFlow<DailiesUiState> = _uiState.asStateFlow()

@@ -22,11 +22,11 @@ sealed interface AddTodoUiState {
     data class Error(val message: String) : AddTodoUiState
 }
 
-class AddTodoTaskViewModel : ViewModel() {
-
-    private val taskRepository = TaskRepository()
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
+class AddTodoTaskViewModel(
+    private val taskRepository: TaskRepository = TaskRepository(),
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
     private val _uiState = MutableStateFlow<AddTodoUiState>(AddTodoUiState.Idle)
     val uiState: StateFlow<AddTodoUiState> = _uiState.asStateFlow()
 

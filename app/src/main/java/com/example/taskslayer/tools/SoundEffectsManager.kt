@@ -5,24 +5,29 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import com.example.taskslayer.R
 
-class SoundEffectsManager(context: Context?) {
+class SoundEffectsManager(
+    context: Context?,
+    private val soundPool: SoundPool = createDefaultSoundPool()
+) {
 
-    private val soundPool: SoundPool
     private var slashSoundId: Int = 0
     private var isLoaded = false
 
+    companion object {
+        private fun createDefaultSoundPool(): SoundPool {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
+            return SoundPool.Builder()
+                .setMaxStreams(1)
+                .setAudioAttributes(audioAttributes)
+                .build()
+        }
+    }
+
     init {
-        // Configura o áudio para ser tratado como efeito sonoro de jogo
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-
-        soundPool = SoundPool.Builder()
-            .setMaxStreams(1)
-            .setAudioAttributes(audioAttributes)
-            .build()
-
         // Carrega o som da pasta raw e descobre o ID dele
         slashSoundId = soundPool.load(context, R.raw.sword_slash_sound, 1)
 

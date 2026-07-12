@@ -10,9 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class RegisterViewModel : ViewModel() {
-    private val auth = FirebaseAuth.getInstance()
-    private val userRepository = UserRepository()
+class RegisterViewModel(
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val userRepository: UserRepository = UserRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()

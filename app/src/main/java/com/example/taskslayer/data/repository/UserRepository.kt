@@ -5,8 +5,9 @@ import com.example.taskslayer.domain.model.User
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-class UserRepository {
-    private val db = FirebaseFirestore.getInstance()
+class UserRepository(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
     private val usersCollection = db.collection("usuarios")
 
     fun buscarUsuario(uid: String, onSucesso: (User) -> Unit, onErro: (Exception) -> Unit) {

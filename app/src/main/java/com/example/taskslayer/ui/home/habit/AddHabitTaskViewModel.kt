@@ -22,11 +22,12 @@ sealed interface AddHabitUiState {
     data class Error(val message: String) : AddHabitUiState
 }
 
-class AddHabitTaskViewModel : ViewModel() {
+class AddHabitTaskViewModel(
+    private val taskRepository: TaskRepository = TaskRepository(),
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
 
-    private val taskRepository = TaskRepository()
-    private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<AddHabitUiState>(AddHabitUiState.Idle)
     val uiState: StateFlow<AddHabitUiState> = _uiState.asStateFlow()
 

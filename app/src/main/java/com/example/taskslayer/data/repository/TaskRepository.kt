@@ -5,9 +5,10 @@ import com.example.taskslayer.domain.model.Todo
 import com.example.taskslayer.domain.model.Dailie
 import com.example.taskslayer.domain.model.Habit
 
-class TaskRepository {
+class TaskRepository(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
 
-    private val db = FirebaseFirestore.getInstance()
     private fun getUsuarioDocument(uid: String) = db.collection("usuarios").document(uid)
 
     fun salvarTodo(uid: String, todo: Todo, onSucesso: () -> Unit, onErro: (Exception) -> Unit) {
