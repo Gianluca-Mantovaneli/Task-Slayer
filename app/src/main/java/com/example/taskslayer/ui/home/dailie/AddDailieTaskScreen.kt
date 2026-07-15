@@ -270,7 +270,9 @@ fun AddDailieTaskContent(
                 ) {
                     OutlinedTextField(
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        readOnly = true, value = repeticao.name, onValueChange = {},
+                        readOnly = true,
+                        value = if (repeticao == Repetition.NONE) "Selecione" else repeticao.name,
+                        onValueChange = {},
                         label = { Text("Repetição") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpandido) },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()

@@ -39,6 +39,7 @@ data class Dailie(
     val dataInicio: String = "",
     val repeticao: Repetition = Repetition.NONE,
     val aCada: Int = 0,
+    val lastReset: String = "", // Armazena a última data (dd/MM/yyyy) em que o status foi verificado/resetado
 ) : Task()
 
 /**

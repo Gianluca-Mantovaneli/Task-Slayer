@@ -126,7 +126,11 @@ fun HomeContent(
                 AbasHome.STATS -> stringResource(R.string.title_aba_home_stats)
             }
             TopAppBar(
-                title = { Text(text = tituloTopBar, fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary) },
+                title = {
+                    Text(text = tituloTopBar,
+                        fontFamily = FonteDoTituloSlayer,
+                        color = MaterialTheme.colorScheme.primary)
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
                 ),
@@ -158,23 +162,7 @@ fun HomeContent(
                                 },
                                 onClick = {
                                     expandido = false
-                                    FirebaseAuth.getInstance().signOut()
                                     onSignOutClick()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Idioma") },
-                                leadingIcon = {
-                                    Icon(
-                                        modifier = Modifier.size(15.dp),
-                                        painter = painterResource(id = TaskSlayerIcons.ChangeLanguageIcon),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        contentDescription = "Idioma"
-                                    )
-                                },
-                                onClick = {
-                                    expandido = false
-                                // TODO: Implementar lógica de troca de idioma
                                 }
                             )
                             DropdownMenuItem(

@@ -9,6 +9,7 @@ import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dificulty
 import com.example.taskslayer.domain.model.Dailie
 import com.example.taskslayer.domain.model.Repetition
+import com.example.taskslayer.tools.DateUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +41,7 @@ class AddDailieTaskViewModel(
     var isEditMode by mutableStateOf(false)
 
     private var statusDoneAtual: Boolean = false
+    private var lastResetAtual: String = ""
 
     private val ehTarefaNova get() = idTaskAtual.isBlank()
 
@@ -62,6 +64,7 @@ class AddDailieTaskViewModel(
             taskId = dailieId,
             onSucesso = { dailieCarregada ->
                 statusDoneAtual = dailieCarregada.done
+                lastResetAtual = dailieCarregada.lastReset
                 _uiState.value = AddDailieUiState.Loaded(dailieCarregada)
             },
             onErro = { exception ->
@@ -92,6 +95,18 @@ class AddDailieTaskViewModel(
             _uiState.value = AddDailieUiState.Error("Selecione uma dificuldade válida!")
             return
         }
+        if (repeticao == Repetition.NONE) {
+            _uiState.value = AddDailieUiState.Error("Por favor, selecione um tipo de repetição!")
+            return
+        }
+        if (dataInicio.isBlank()) {
+            _uiState.value = AddDailieUiState.Error("Selecione uma data de início!")
+            return
+        }
+        if (aCada <= 0) {
+            _uiState.value = AddDailieUiState.Error("A frequência deve ser de pelo menos 1!")
+            return
+        }
 
         val uidLogado = auth.currentUser?.uid
         if (uidLogado == null) {
@@ -102,6 +117,10 @@ class AddDailieTaskViewModel(
         _uiState.value = AddDailieUiState.Loading
 
         val seEhTarefaNova = ehTarefaNova
+        
+        // Se for nova, define o lastReset como hoje para começar a contagem
+        val lastResetParaSalvar = if (seEhTarefaNova) DateUtils.getTodayDate() else lastResetAtual
+
         val novaDailie = Dailie(
             id = idTaskAtual,
             title = titulo,
@@ -110,7 +129,8 @@ class AddDailieTaskViewModel(
             done = statusDoneAtual,
             dataInicio = dataInicio,
             repeticao = repeticao,
-            aCada = aCada
+            aCada = aCada,
+            lastReset = lastResetParaSalvar
         )
 
         taskRepository.salvarDailie(
@@ -179,5 +199,6 @@ class AddDailieTaskViewModel(
         idTaskAtual = ""
         isEditMode = false
         statusDoneAtual = false
+        lastResetAtual = ""
     }
 }

@@ -145,7 +145,7 @@ fun LoginContent(
             // Título da tela de Login
             Text(
                 text = stringResource(R.string.titulo_login),
-                style = TextStyle(fontSize = 28.sp, color = MaterialTheme.colorScheme.primary)
+                style = TextStyle(fontSize = 28.sp, fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

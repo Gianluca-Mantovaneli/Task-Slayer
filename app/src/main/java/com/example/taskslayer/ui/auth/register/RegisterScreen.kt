@@ -107,7 +107,7 @@ fun RegisterContent(
             // Título específico da tela
             Text(
                 text = stringResource(R.string.titulo_tela_cadastro),
-                style = TextStyle(fontSize = 28.sp, color = MaterialTheme.colorScheme.primary),
+                style = TextStyle(fontSize = 28.sp, fontFamily = FonteDoTituloSlayer, color = MaterialTheme.colorScheme.primary),
                 modifier = Modifier.padding(12.dp)
             )
 

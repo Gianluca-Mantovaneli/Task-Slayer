@@ -227,4 +227,25 @@ class TaskRepository(
             .addOnSuccessListener { onSucesso() }
             .addOnFailureListener { onErro(it) }
     }
+
+    /**
+     * Reseta o status de uma missão diária e atualiza a data do último reset.
+     */
+    fun resetDailieStatus(
+        uid: String,
+        taskId: String,
+        novoStatus: Boolean,
+        lastResetDate: String,
+        onSucesso: () -> Unit = {},
+        onErro: (Exception) -> Unit = {}
+    ) {
+        val updates = mapOf(
+            "done" to novoStatus,
+            "lastReset" to lastResetDate
+        )
+        getUsuarioDocument(uid).collection("dailies").document(taskId)
+            .update(updates)
+            .addOnSuccessListener { onSucesso() }
+            .addOnFailureListener { onErro(it) }
+    }
 }

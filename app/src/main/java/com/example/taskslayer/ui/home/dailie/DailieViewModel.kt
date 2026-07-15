@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.example.taskslayer.data.repository.TaskRepository
 import com.example.taskslayer.data.repository.UserRepository
 import com.example.taskslayer.domain.model.Dailie
+import com.example.taskslayer.tools.DateUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,7 @@ class DailiesViewModel(
     val uiState: StateFlow<DailiesUiState> = _uiState.asStateFlow()
 
     /**
-     * Carrega as missões diárias do usuário logado.
+     * Carrega as missões diárias do usuário logado e reseta as expiradas.
      */
     fun carregarDailies() {
         val uidLogado = auth.currentUser?.uid
@@ -47,7 +48,22 @@ class DailiesViewModel(
         taskRepository.listarDailies(
             uid = uidLogado,
             onSucesso = { lista ->
-                _uiState.value = DailiesUiState.Success(lista)
+                val hoje = DateUtils.getTodayDate()
+                val listaProcessada = lista.map { dailie ->
+                    // Verifica se deve resetar com base na repetição e frequência
+                    if (DateUtils.shouldReset(dailie.lastReset, dailie.repeticao, dailie.aCada)) {
+                        taskRepository.resetDailieStatus(
+                            uid = uidLogado,
+                            taskId = dailie.id,
+                            novoStatus = false,
+                            lastResetDate = hoje
+                        )
+                        dailie.copy(done = false, lastReset = hoje)
+                    } else {
+                        dailie
+                    }
+                }
+                _uiState.value = DailiesUiState.Success(listaProcessada)
             },
             onErro = { excecao ->
                 _uiState.value = DailiesUiState.Error(
@@ -63,21 +79,23 @@ class DailiesViewModel(
      */
     fun alternarStatusDailie(dailie: Dailie, novoStatus: Boolean) {
         val uidLogado = auth.currentUser?.uid ?: return
+        val hoje = DateUtils.getTodayDate()
 
         // Atualização Otimista local
         val estadoAtual = _uiState.value
         if (estadoAtual is DailiesUiState.Success) {
             val listaAtualizada = estadoAtual.dailies.map { item ->
-                if (item.id == dailie.id) item.copy(done = novoStatus) else item
+                if (item.id == dailie.id) item.copy(done = novoStatus, lastReset = hoje) else item
             }
             _uiState.value = DailiesUiState.Success(listaAtualizada)
         }
 
-        taskRepository.atualizarStatusTarefa(
+        // Para Dailies, ao marcar/desmarcar, também garantimos que o lastReset é hoje
+        taskRepository.resetDailieStatus(
             uid = uidLogado,
             taskId = dailie.id,
-            tipoColecao = "dailies",
             novoStatus = novoStatus,
+            lastResetDate = hoje,
             onSucesso = {
                 // Ao concluir ou desmarcar, atualiza a experiência/status do usuário
                 userRepository.computarProgressoTarefa(
